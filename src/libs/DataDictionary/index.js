@@ -4,8 +4,8 @@ Code to text decoder
 */
 
 export default class DataDictionary {
-  /** Decode architecture */
-  static DecodeMachine (id: number): string {
+  /** Decode architecture [Machine] */
+  static decodeMachine (id: number): string {
     let machines = {
       [String(0x0000)]: 'Unknown',
       [String(0x014C)]: 'I386',
@@ -42,8 +42,8 @@ export default class DataDictionary {
     return machines[id] || 'Unknown'
   }
 
-  /** Decode image type */
-  static DecodeMagic (id: number): string {
+  /** Decode image type [Magic] */
+  static decodeMagic (id: number): string {
     let magics = {
       [String(0x010B)]: 'PE32',
       [String(0x020B)]: 'PE64',
@@ -52,8 +52,8 @@ export default class DataDictionary {
     return magics[id] || 'Unknown'
   }
 
-  /** Decode OS version by major and minor */
-  static DecodeOSVersion (maj: number, min: number) {
+  /** Decode OS version by major and minor [MajorOperatingSystemVersion, MinorOperatingSystemVersion] */
+  static decodeOSVersion (maj: number, min: number) {
     let version = maj + '.' + min
     let versions = {
       '1.1': 'Windows 1.0',
@@ -84,8 +84,8 @@ export default class DataDictionary {
     return versions[version] || 'Unknown'
   }
 
-  /** Decode runtime subsystem */
-  static DecodeSubsystem (id: number): string {
+  /** Decode runtime subsystem [Subsystem] */
+  static decodeSubsystem (id: number): string {
     let subsystems = {
       [String(0x0000)]: 'Unknown',
       [String(0x0001)]: 'Native',
@@ -105,8 +105,8 @@ export default class DataDictionary {
     return subsystems[id] || 'Unknown'
   }
 
-  /** Decode characteristics set */
-  static DecodeChars (id: number): Array<string> {
+  /** Decode characteristics set [Characteristics] */
+  static decodeChars (id: number): Array<string> {
     let chars = {
       [String(0x0001)]: 'RelocsStripped',
       [String(0x0002)]: 'ExecutableImage',
@@ -130,8 +130,8 @@ export default class DataDictionary {
     return charsList
   }
 
-  /** Decode library characteristics set */
-  static DecodeDllChars (id: number): Array<string> {
+  /** Decode library characteristics set [DllCharacteristics] */
+  static decodeDllChars (id: number): Array<string> {
     let dllchars = {
       [String(0x0020)]: 'HighEntropyVa',
       [String(0x0040)]: 'DynamicBase',

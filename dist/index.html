@@ -10,7 +10,8 @@
   (async () => {
 
     let pexe = new Pexe()
-    await pexe.fetchFile('./soft.exe')
+    await pexe.fetchFile('./soft/win1.exe')
+    console.log(pexe.parse())
 
   })();
 </script>

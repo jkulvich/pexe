@@ -21,7 +21,7 @@ export type DataBlock = {
 
 /** Reading and parsing byte array */
 export default class FileReader {
-  _bytes: Uint8Array
+  bytes: Uint8Array
   pointer: number = 0
 
   constructor (bytes?: Uint8Array) {
@@ -30,24 +30,24 @@ export default class FileReader {
 
   /** Set new working file */
   setFile (bytes: Uint8Array): void {
-    this._bytes = bytes
+    this.bytes = bytes
     this.pointer = 0
   }
 
   /** Is pointer in end of file */
   isEOF (): boolean {
-    return this.pointer >= this._bytes.length - 1
+    return this.pointer >= this.bytes.length - 1
   }
 
   /** Read next byte or throw exception */
   readNext (): number {
-    if (!this.isEOF()) return this._bytes[this.pointer++]
+    if (!this.isEOF()) return this.bytes[this.pointer++]
     else throw new Errors.FileReaderEOFError(`end of file`)
   }
 
   /** Determines that can read given count of bytes **/
   canRead (count: number): boolean {
-    return this.pointer + count <= this._bytes.length
+    return this.pointer + count <= this.bytes.length
   }
 
   /** Reads given count of bytes or throws exception **/

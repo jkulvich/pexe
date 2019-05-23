@@ -15,7 +15,7 @@ export default class Bytes {
   static isHex (hex: string): boolean {
     if (typeof hex !== typeof String()) return false
     if (hex.length !== 2) return false
-    return (/[0-9a-f]{2}/).test(hex)
+    return (/[0-9a-f]{2}/i).test(hex)
   }
 
   /** Determines that string is hex array */
@@ -101,7 +101,7 @@ export default class Bytes {
    * @returns {number}
    */
   static arrayToNumber (arr: Uint8Array): number {
-    return arr.map((num, pos) => (256 ** pos) * num).reduce((acc: number, num) => acc + num)
+    return [...arr].map((num, pos) => (256 ** pos) * num).reduce((acc: number, num) => acc + num)
   }
 
   /**

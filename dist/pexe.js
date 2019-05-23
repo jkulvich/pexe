@@ -82,7 +82,7 @@ var Pexe =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 15);
+/******/ 	return __webpack_require__(__webpack_require__.s = 19);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -238,9 +238,9 @@ var getPrototypeOf = __webpack_require__(3);
 
 var setPrototypeOf = __webpack_require__(9);
 
-var isNativeFunction = __webpack_require__(13);
+var isNativeFunction = __webpack_require__(14);
 
-var construct = __webpack_require__(14);
+var construct = __webpack_require__(15);
 
 function _wrapNativeSuper(Class) {
   var _cache = typeof Map === "function" ? new Map() : undefined;
@@ -297,7 +297,7 @@ module.exports = _setPrototypeOf;
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(12);
+module.exports = __webpack_require__(13);
 
 
 /***/ }),
@@ -344,6 +344,22 @@ module.exports = _asyncToGenerator;
 
 /***/ }),
 /* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var arrayWithoutHoles = __webpack_require__(16);
+
+var iterableToArray = __webpack_require__(17);
+
+var nonIterableSpread = __webpack_require__(18);
+
+function _toConsumableArray(arr) {
+  return arrayWithoutHoles(arr) || iterableToArray(arr) || nonIterableSpread();
+}
+
+module.exports = _toConsumableArray;
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1075,7 +1091,7 @@ try {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 function _isNativeFunction(fn) {
@@ -1085,7 +1101,7 @@ function _isNativeFunction(fn) {
 module.exports = _isNativeFunction;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var setPrototypeOf = __webpack_require__(9);
@@ -1123,7 +1139,43 @@ function _construct(Parent, args, Class) {
 module.exports = _construct;
 
 /***/ }),
-/* 15 */
+/* 16 */
+/***/ (function(module, exports) {
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+}
+
+module.exports = _arrayWithoutHoles;
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
+function _iterableToArray(iter) {
+  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+}
+
+module.exports = _iterableToArray;
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance");
+}
+
+module.exports = _nonIterableSpread;
+
+/***/ }),
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1231,6 +1283,10 @@ function (_FileReaderError) {
 
   return FileReaderEOFError;
 }(errors_FileReaderError);
+// EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/toConsumableArray.js
+var toConsumableArray = __webpack_require__(12);
+var toConsumableArray_default = /*#__PURE__*/__webpack_require__.n(toConsumableArray);
+
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/typeof.js
 var helpers_typeof = __webpack_require__(7);
 var typeof_default = /*#__PURE__*/__webpack_require__.n(helpers_typeof);
@@ -1383,6 +1439,7 @@ function (_BytesError4) {
 
 
 
+
 /*
 Bytes manipulation
 */
@@ -1409,7 +1466,7 @@ function () {
     value: function isHex(hex) {
       if (typeof_default()(hex) !== typeof_default()(String())) return false;
       if (hex.length !== 2) return false;
-      return /[0-9a-f]{2}/.test(hex);
+      return /[0-9a-f]{2}/i.test(hex);
     }
     /** Determines that string is hex array */
 
@@ -1539,7 +1596,7 @@ function () {
   }, {
     key: "arrayToNumber",
     value: function arrayToNumber(arr) {
-      return arr.map(function (num, pos) {
+      return toConsumableArray_default()(arr).map(function (num, pos) {
         return Math.pow(256, pos) * num;
       }).reduce(function (acc, num) {
         return acc + num;
@@ -1635,7 +1692,7 @@ function () {
   function FileReader(bytes) {
     classCallCheck_default()(this, FileReader);
 
-    defineProperty_default()(this, "_bytes", void 0);
+    defineProperty_default()(this, "bytes", void 0);
 
     defineProperty_default()(this, "pointer", 0);
 
@@ -1647,7 +1704,7 @@ function () {
   createClass_default()(FileReader, [{
     key: "setFile",
     value: function setFile(bytes) {
-      this._bytes = bytes;
+      this.bytes = bytes;
       this.pointer = 0;
     }
     /** Is pointer in end of file */
@@ -1655,21 +1712,21 @@ function () {
   }, {
     key: "isEOF",
     value: function isEOF() {
-      return this.pointer >= this._bytes.length - 1;
+      return this.pointer >= this.bytes.length - 1;
     }
     /** Read next byte or throw exception */
 
   }, {
     key: "readNext",
     value: function readNext() {
-      if (!this.isEOF()) return this._bytes[this.pointer++];else throw new errors_FileReaderEOFError("end of file");
+      if (!this.isEOF()) return this.bytes[this.pointer++];else throw new errors_FileReaderEOFError("end of file");
     }
     /** Determines that can read given count of bytes **/
 
   }, {
     key: "canRead",
     value: function canRead(count) {
-      return this.pointer + count <= this._bytes.length;
+      return this.pointer + count <= this.bytes.length;
     }
     /** Reads given count of bytes or throws exception **/
 
@@ -1836,6 +1893,21 @@ function () {
       });
       return blocks;
     }
+    /**
+     * Convert DataBlock array to DataBlock map by name
+     * @param block
+     * @returns {Object}
+     */
+
+  }, {
+    key: "convertStructureToMap",
+    value: function convertStructureToMap(block) {
+      var map = {};
+      block.forEach(function (b) {
+        map[b.name] = b;
+      });
+      return map;
+    }
     /** Creates new structure description */
 
   }, {
@@ -1853,18 +1925,39 @@ function () {
   }, {
     key: "readDOSHeader",
     value: function readDOSHeader() {
-      var struct = [this._desc(Word, 'e_magic', 'Magic number (MZ)'), this._desc(Word, 'e_cblp', 'Bytes on last page of file'), this._desc(Word, 'e_cp', 'Pages in file'), this._desc(Word, 'e_crlc', 'Relocations'), this._desc(Word, 'e_cparhdr', 'Size of header in paragraphs'), this._desc(Word, 'e_minalloc', 'Minimum extra paragraphs needed'), this._desc(Word, 'e_maxalloc', 'Maximum extra paragraphs needed'), this._desc(Word, 'e_ss', 'Initial (relative) SS value'), this._desc(Word, 'e_sp', 'Initial SP value'), this._desc(Word, 'e_csum', 'Checksum'), this._desc(Word, 'e_ip', 'Initial IP value'), this._desc(Word, 'e_cs', 'Initial CS value'), this._desc(Word, 'e_lfarlc', 'File address of relocation table'), this._desc(Word, 'e_ovno', 'Overlay number'), this._desc(Word * 4, 'e_res', 'Reserved'), this._desc(Word, 'e_oemid', 'OEM identifier'), this._desc(Word, 'e_oeminfo', 'OEM information; e_oemid specific'), this._desc(Word * 10, 'e_res2', 'Reserved'), this._desc(Word, 'e_lfanew', 'File address of new exe header')];
-      return this.readStructure(struct);
+      var structdef = [this._desc(Word, 'e_magic', 'Magic number (MZ)'), this._desc(Word, 'e_cblp', 'Bytes on last page of file'), this._desc(Word, 'e_cp', 'Pages in file'), this._desc(Word, 'e_crlc', 'Relocations'), this._desc(Word, 'e_cparhdr', 'Size of header in paragraphs'), this._desc(Word, 'e_minalloc', 'Minimum extra paragraphs needed'), this._desc(Word, 'e_maxalloc', 'Maximum extra paragraphs needed'), this._desc(Word, 'e_ss', 'Initial (relative) SS value'), this._desc(Word, 'e_sp', 'Initial SP value'), this._desc(Word, 'e_csum', 'Checksum'), this._desc(Word, 'e_ip', 'Initial IP value'), this._desc(Word, 'e_cs', 'Initial CS value'), this._desc(Word, 'e_lfarlc', 'File address of relocation table'), this._desc(Word, 'e_ovno', 'Overlay number'), this._desc(Word * 4, 'e_res', 'Reserved'), this._desc(Word, 'e_oemid', 'OEM identifier'), this._desc(Word, 'e_oeminfo', 'OEM information; e_oemid specific'), this._desc(Word * 10, 'e_res2', 'Reserved'), this._desc(Word, 'e_lfanew', 'File address of new exe header')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+    /** Reads File header (or COFF) */
+
+  }, {
+    key: "readFileHeader",
+    value: function readFileHeader() {
+      var structdef = [this._desc(Word, 'Machine', 'Architecture type of the computer'), this._desc(Word, 'NumberOfSections', 'Size of the section table'), this._desc(DWord, 'TimeDataStamp', 'Date and time the image was created'), this._desc(DWord, 'PointerToSymbolTable', 'Offset of the symbol table, or zero if no COFF symbol table exists'), this._desc(DWord, 'NumberOfSymbols', 'Number of symbols in the symbol table'), this._desc(Word, 'SizeOfOptionalHeader', 'NtOptional32Header'), this._desc(Word, 'Characteristics', 'ExecutableImage, 32BitMachine')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+    /** Reads optional header */
+
+  }, {
+    key: "readOptionalHeader",
+    value: function readOptionalHeader() {
+      var structdef = [this._desc(Word, 'Magic', 'PE32 - State of the image file'), this._desc(Byte, 'MajorLinkerVersion', ''), this._desc(Byte, 'MinorLinkerVersion', ''), this._desc(DWord, 'SizeOfCode', 'Size of the code section'), this._desc(DWord, 'SizeOfInitializedData', 'Size of the initialized data section'), this._desc(DWord, 'SizeOfUninitializedData', 'Size of the uninitialized data section'), this._desc(DWord, 'AddressOfEntryPoint', 'Pointer to the entry point function, relative to the image base address, or zero if no entry point is present'), this._desc(DWord, 'BaseOfCode', 'Pointer to the beginning of the code section, relative to the image base'), this._desc(DWord, 'BaseOfData', 'Pointer to the beginning of the data section, relative to the image base'), this._desc(DWord, 'ImageBase', 'Preferred address of the first byte of the image when it is loaded in memory'), this._desc(DWord, 'SectionAlignment', 'Alignment of the section loaded in memory'), this._desc(DWord, 'FileAlignment', 'Alignment of the raw data of sections in the image file'), this._desc(Word, 'MajorOperatingSystemVersion', 'Major version number of the required operating system'), this._desc(Word, 'MinorOperatingSystemVersion', 'Minor version number of the required operating system'), this._desc(Word, 'MajorImageVersion', ''), this._desc(Word, 'MinorImageVersion', ''), this._desc(Word, 'MajorSubsystemVersion', ''), this._desc(Word, 'MinorSubsystemVersion', ''), this._desc(DWord, 'Win32VersionValue', 'Reserved'), this._desc(DWord, 'SizeOfImage', 'Size of the image including all headers'), this._desc(DWord, 'SizeOfHeaders', ''), this._desc(DWord, 'CheckSum', 'Image file checksum'), this._desc(Word, 'Subsystem', 'WindowsCui - Subsystem required to run this image'), this._desc(Word, 'DllCharacteristics', 'DynamicBase, NxCompat, TerminalServerAware - DLL characteristics of the image'), this._desc(DWord, 'SizeOfStackReserve', 'Number of bytes to reserve for the stack'), this._desc(DWord, 'SizeOfStackCommit', 'Number of bytes to commit for the stack'), this._desc(DWord, 'SizeOfHeapReserve', 'Number of bytes to reserve for the local heap'), this._desc(DWord, 'SizeOfHeapCommit', 'Number of bytes to commit for the local heap'), this._desc(DWord, 'LoaderFlags', 'Obsolete'), this._desc(DWord, 'NumberOfRvaAndSizes', 'Number of directory entries in the remainder of the optional header')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
     }
     /** Reads NT header */
 
   }, {
     key: "readNTHeader",
     value: function readNTHeader() {
-      var struct = [this._desc(DWord, 'Signature', 'PE\\0\\0'), // COFF
-      this._desc(Word, 'Machine', 'Architecture type of the computer'), this._desc(Word, 'NumberOfSections', 'Size of the section table'), this._desc(DWord, 'TimeDataStamp', 'Date and time the image was created'), this._desc(DWord, 'PointerToSymbolTable', 'Offset of the symbol table, or zero if no COFF symbol table exists'), this._desc(DWord, 'NumberOfSymbols', 'Number of symbols in the symbol table'), this._desc(Word, 'SizeOfOptionalHeader', 'NtOptional32Header'), this._desc(Word, 'Characteristics', 'ExecutableImage, 32BitMachine'), // Optional header
-      this._desc(Word, 'Magic', 'PE32 - State of the image file'), this._desc(Byte, 'MajorLinkerVersion', ''), this._desc(Byte, 'MinorLinkerVersion', ''), this._desc(DWord, 'SizeOfCode', 'Size of the code section'), this._desc(DWord, 'SizeOfInitializedData', 'Size of the initialized data section'), this._desc(DWord, 'SizeOfUninitializedData', 'Size of the uninitialized data section'), this._desc(DWord, 'AddressOfEntryPoint', 'Pointer to the entry point function, relative to the image base address, or zero if no entry point is present'), this._desc(DWord, 'BaseOfCode', 'Pointer to the beginning of the code section, relative to the image base'), this._desc(DWord, 'BaseOfData', 'Pointer to the beginning of the data section, relative to the image base'), this._desc(DWord, 'ImageBase', 'Preferred address of the first byte of the image when it is loaded in memory'), this._desc(DWord, 'SectionAlignment', 'Alignment of the section loaded in memory'), this._desc(DWord, 'FileAlignment', 'Alignment of the raw data of sections in the image file'), this._desc(Word, 'MajorOperatingSystemVersion', 'Major version number of the required operating system'), this._desc(Word, 'MinorOperatingSystemVersion', 'Minor version number of the required operating system'), this._desc(Word, 'MajorImageVersion', ''), this._desc(Word, 'MinorImageVersion', ''), this._desc(Word, 'MajorSubsystemVersion', ''), this._desc(Word, 'MinorSubsystemVersion', ''), this._desc(DWord, 'Win32VersionValue', 'Reserved'), this._desc(DWord, 'SizeOfImage', 'Size of the image including all headers'), this._desc(DWord, 'SizeOfHeaders', ''), this._desc(DWord, 'CheckSum', 'Image file checksum'), this._desc(Word, 'Subsystem', 'WindowsCui - Subsystem required to run this image'), this._desc(Word, 'DllCharacteristics', 'DynamicBase, NxCompat, TerminalServerAware - DLL characteristics of the image'), this._desc(DWord, 'SizeOfStackReserve', 'Number of bytes to reserve for the stack'), this._desc(DWord, 'SizeOfStackCommit', 'Number of bytes to commit for the stack'), this._desc(DWord, 'SizeOfHeapReserve', 'Number of bytes to reserve for the local heap'), this._desc(DWord, 'SizeOfHeapCommit', 'Number of bytes to commit for the local heap'), this._desc(DWord, 'LoaderFlags', 'Obsolete'), this._desc(DWord, 'NumberOfRvaAndSizes', 'Number of directory entries in the remainder of the optional header')];
-      return this.readStructure(struct);
+      var structdef = [this._desc(DWord, 'Signature', 'PE\\0\\0')];
+      var struct = this.readStructure(structdef);
+      var map = this.convertStructureToMap(struct);
+      map.file = this.readFileHeader();
+      map.optional = this.readOptionalHeader();
+      return map;
     }
   }]);
 
@@ -1888,30 +1981,30 @@ function () {
   }
 
   createClass_default()(DataDictionary, null, [{
-    key: "DecodeMachine",
+    key: "decodeMachine",
 
-    /** Decode architecture */
-    value: function DecodeMachine(id) {
+    /** Decode architecture [Machine] */
+    value: function decodeMachine(id) {
       var _machines;
 
       var machines = (_machines = {}, defineProperty_default()(_machines, String(0x0000), 'Unknown'), defineProperty_default()(_machines, String(0x014C), 'I386'), defineProperty_default()(_machines, String(0x014D), 'I486'), defineProperty_default()(_machines, String(0x014E), 'PENTIUM'), defineProperty_default()(_machines, String(0x0160), 'R3000_BE'), defineProperty_default()(_machines, String(0x0162), 'R3000'), defineProperty_default()(_machines, String(0x0166), 'R4000'), defineProperty_default()(_machines, String(0x0168), 'R10000'), defineProperty_default()(_machines, String(0x0169), 'WCEMIPSV2'), defineProperty_default()(_machines, String(0x0184), 'ALPHA'), defineProperty_default()(_machines, String(0x01A2), 'SH3'), defineProperty_default()(_machines, String(0x01A3), 'SH3DSP'), defineProperty_default()(_machines, String(0x01A6), 'SH4'), defineProperty_default()(_machines, String(0x01A8), 'SH5'), defineProperty_default()(_machines, String(0x01C0), 'ARM'), defineProperty_default()(_machines, String(0x01C2), 'THUMB'), defineProperty_default()(_machines, String(0x01D3), 'AM33'), defineProperty_default()(_machines, String(0x01F0), 'POWERPC'), defineProperty_default()(_machines, String(0x01F1), 'POWERPCFP'), defineProperty_default()(_machines, String(0x0200), 'IA64'), defineProperty_default()(_machines, String(0x0266), 'MIPS16'), defineProperty_default()(_machines, String(0x0284), 'ALPHA64'), defineProperty_default()(_machines, String(0x0366), 'MIPSFPU'), defineProperty_default()(_machines, String(0x0466), 'MIPSFPU16'), defineProperty_default()(_machines, String(0x0520), 'TRICORE'), defineProperty_default()(_machines, String(0x0CEF), 'CEF'), defineProperty_default()(_machines, String(0x0EBC), 'EBC'), defineProperty_default()(_machines, String(0x8664), 'AMD64'), defineProperty_default()(_machines, String(0x9104), 'M32R'), defineProperty_default()(_machines, String(0xC0EE), 'CEE'), defineProperty_default()(_machines, String(0x01C4), 'ARMNT'), _machines);
       return machines[id] || 'Unknown';
     }
-    /** Decode image type */
+    /** Decode image type [Magic] */
 
   }, {
-    key: "DecodeMagic",
-    value: function DecodeMagic(id) {
+    key: "decodeMagic",
+    value: function decodeMagic(id) {
       var _magics;
 
       var magics = (_magics = {}, defineProperty_default()(_magics, String(0x010B), 'PE32'), defineProperty_default()(_magics, String(0x020B), 'PE64'), defineProperty_default()(_magics, String(0x0107), 'ROM'), _magics);
       return magics[id] || 'Unknown';
     }
-    /** Decode OS version by major and minor */
+    /** Decode OS version by major and minor [MajorOperatingSystemVersion, MinorOperatingSystemVersion] */
 
   }, {
-    key: "DecodeOSVersion",
-    value: function DecodeOSVersion(maj, min) {
+    key: "decodeOSVersion",
+    value: function decodeOSVersion(maj, min) {
       var version = maj + '.' + min;
       var versions = {
         '1.1': 'Windows 1.0',
@@ -1941,21 +2034,21 @@ function () {
       };
       return versions[version] || 'Unknown';
     }
-    /** Decode runtime subsystem */
+    /** Decode runtime subsystem [Subsystem] */
 
   }, {
-    key: "DecodeSubsystem",
-    value: function DecodeSubsystem(id) {
+    key: "decodeSubsystem",
+    value: function decodeSubsystem(id) {
       var _subsystems;
 
       var subsystems = (_subsystems = {}, defineProperty_default()(_subsystems, String(0x0000), 'Unknown'), defineProperty_default()(_subsystems, String(0x0001), 'Native'), defineProperty_default()(_subsystems, String(0x0002), 'WindowsGui'), defineProperty_default()(_subsystems, String(0x0003), 'WindowsCui'), defineProperty_default()(_subsystems, String(0x0005), 'Os2Cui'), defineProperty_default()(_subsystems, String(0x0007), 'PosixCui'), defineProperty_default()(_subsystems, String(0x0008), 'NativeWindows'), defineProperty_default()(_subsystems, String(0x0009), 'WindowsCeGui'), defineProperty_default()(_subsystems, String(0x000A), 'EfiApplication'), defineProperty_default()(_subsystems, String(0x000B), 'EfiBootServiceDriver'), defineProperty_default()(_subsystems, String(0x000C), 'EfiRuntimeDriver'), defineProperty_default()(_subsystems, String(0x000D), 'EfiRom'), defineProperty_default()(_subsystems, String(0x000E), 'Xbox'), defineProperty_default()(_subsystems, String(0x0010), 'WindowsBootApplication'), _subsystems);
       return subsystems[id] || 'Unknown';
     }
-    /** Decode characteristics set */
+    /** Decode characteristics set [Characteristics] */
 
   }, {
-    key: "DecodeChars",
-    value: function DecodeChars(id) {
+    key: "decodeChars",
+    value: function decodeChars(id) {
       var _chars;
 
       var chars = (_chars = {}, defineProperty_default()(_chars, String(0x0001), 'RelocsStripped'), defineProperty_default()(_chars, String(0x0002), 'ExecutableImage'), defineProperty_default()(_chars, String(0x0004), 'LineNumsStripped'), defineProperty_default()(_chars, String(0x0008), 'LocalSymsStripped'), defineProperty_default()(_chars, String(0x0010), 'AggressiveWSTrim'), defineProperty_default()(_chars, String(0x0020), 'LargeAddressAware'), defineProperty_default()(_chars, String(0x0040), 'Reserved'), defineProperty_default()(_chars, String(0x0080), 'BytesReversedLo'), defineProperty_default()(_chars, String(0x0100), '32BitMachine'), defineProperty_default()(_chars, String(0x0200), 'DebugStripped'), defineProperty_default()(_chars, String(0x0400), 'RemovableRunFromSwap'), defineProperty_default()(_chars, String(0x0800), 'NetRunFromSwap'), defineProperty_default()(_chars, String(0x1000), 'System'), defineProperty_default()(_chars, String(0x2000), 'DLL'), defineProperty_default()(_chars, String(0x4000), 'UpSystemOnly'), defineProperty_default()(_chars, String(0x8000), 'BytesReversedHi'), _chars);
@@ -1967,11 +2060,11 @@ function () {
 
       return charsList;
     }
-    /** Decode library characteristics set */
+    /** Decode library characteristics set [DllCharacteristics] */
 
   }, {
-    key: "DecodeDllChars",
-    value: function DecodeDllChars(id) {
+    key: "decodeDllChars",
+    value: function decodeDllChars(id) {
       var _dllchars;
 
       var dllchars = (_dllchars = {}, defineProperty_default()(_dllchars, String(0x0020), 'HighEntropyVa'), defineProperty_default()(_dllchars, String(0x0040), 'DynamicBase'), defineProperty_default()(_dllchars, String(0x0080), 'ForceIntegrity'), defineProperty_default()(_dllchars, String(0x0100), 'NxCompat'), defineProperty_default()(_dllchars, String(0x0200), 'NoIsolation'), defineProperty_default()(_dllchars, String(0x0400), 'NoSeh'), defineProperty_default()(_dllchars, String(0x0800), 'NoBind'), defineProperty_default()(_dllchars, String(0x1000), 'Appcontainer'), defineProperty_default()(_dllchars, String(0x2000), 'WdmDriver'), defineProperty_default()(_dllchars, String(0x4000), 'GuardCf'), defineProperty_default()(_dllchars, String(0x8000), 'TerminalServerAware'), _dllchars);
@@ -2004,7 +2097,6 @@ function () {
 
 
 
-
 var main_Pexe =
 /*#__PURE__*/
 function () {
@@ -2028,7 +2120,7 @@ function () {
       this._reader.setFile(bytes);
     }
     /**
-     * Fetch and set new file
+     * Fetch file from url and set it
      * @param url
      * @returns {Promise<void>}
      */
@@ -2045,7 +2137,7 @@ function () {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return fetch('./soft.exe');
+                return window.fetch(url);
 
               case 2:
                 resp = _context.sent;
@@ -2055,9 +2147,8 @@ function () {
               case 5:
                 buff = _context.sent;
                 this.setFile(new Uint8Array(buff));
-                return _context.abrupt("return", buff);
 
-              case 8:
+              case 7:
               case "end":
                 return _context.stop();
             }
@@ -2071,6 +2162,51 @@ function () {
 
       return fetchFile;
     }()
+    /**
+     * Returns exe file info
+     * @returns {ExeFile}
+     */
+
+  }, {
+    key: "parse",
+    value: function parse() {
+      var file = {
+        bytes: new Uint8Array([]),
+        meta: {},
+        headers: {
+          dos: {},
+          nt: {}
+        }
+      };
+      var exe = file;
+      var breader = new BlockReader_BlockReader(this._reader);
+      exe.bytes = this._reader.bytes; // Read DOS header
+
+      if (this._reader.bytes.length >= 64) {
+        exe.headers.dos = breader.setPointer(0).readDOSHeader();
+        if (exe.headers.dos.e_magic.text === 'MZ') exe.meta.isDOS = true;
+      } // Read NT header if lfanew is correct
+
+
+      var lfanew = Number(exe.headers.dos.e_lfanew.num);
+
+      if (lfanew > 64 && lfanew < exe.bytes.length - 512) {
+        exe.headers.nt = breader.setPointer(lfanew).readNTHeader();
+        if (exe.headers.nt.Signature.text === 'PE\0\0') exe.meta.isNT = true;
+      } // Decode user-friendly information
+
+
+      if (exe.meta.isNT) {
+        exe.meta.machine = DataDictionary_DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num);
+        exe.meta.magic = DataDictionary_DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num);
+        exe.meta.osVersion = DataDictionary_DataDictionary.decodeOSVersion(exe.headers.nt.optional.MajorOperatingSystemVersion.num, exe.headers.nt.optional.MinorOperatingSystemVersion.num);
+        exe.meta.subsystem = DataDictionary_DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num);
+        exe.meta.chars = DataDictionary_DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num);
+        exe.meta.dllChars = DataDictionary_DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num);
+      }
+
+      return exe;
+    }
   }]);
 
   return Pexe;
