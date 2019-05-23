@@ -1,24 +1,25 @@
+// @flow
 /*
-Пресеты для чтения распространённых блоков
+Presets for known data structures
  */
 
-import FileReader, { DataBlock } from '../FileReader'
+import FileReader from '../FileReader'
+import type { DataBlock } from '../FileReader'
 import * as Errors from './errors'
 
 const Byte = 1
 const Word = 2
 const DWord = 4
 
-/** Описание блока данных для извлечения */
+/** DataBlock description for next extraction */
 export type DataBlockDesk = {
   size: number,
   name: string,
   desc: string
 }
 
-/** Читает блоки информации из файла */
+/** Reads structures from file */
 export default class BlockReader {
-  /** Инструмент чтения файла */
   _reader: FileReader
 
   constructor (fileReader?: FileReader) {
@@ -27,19 +28,19 @@ export default class BlockReader {
     }
   }
 
-  /** Устанавливает инструмент чтения файла */
+  /** FileReader setter */
   setReader (fileReader: FileReader) {
     this._reader = fileReader
   }
 
-  /** Устанавливает позицию указателя в файле */
+  /** FileReader pointer setter */
   setPointer (pos: number): BlockReader {
     if (!this._reader) throw new Errors.BlockReaderEmptyFileReaderError(`file reader is not set`)
     this._reader.pointer = pos
     return this
   }
 
-  /** Читает структуру по её описанию */
+  /** Reads structure by structure description */
   readStructure (struct: Array<DataBlockDesk>): Array<DataBlock> {
     if (!this._reader) throw new Errors.BlockReaderEmptyFileReaderError(`file reader is not set`)
     let blocks: Array<DataBlock> = []
@@ -47,12 +48,12 @@ export default class BlockReader {
     return blocks
   }
 
-  /** Создаёт новую структуру описания блока */
+  /** Creates new structure description */
   _desc (size: number, name: string, desc: string = ''): DataBlockDesk {
     return { size, name, desc }
   }
 
-  /** Читает информацию из DOS заголовка */
+  /** Reads DOS header */
   readDOSHeader (): Array<DataBlock> {
     let struct: Array<DataBlockDesk> = [
       this._desc(Word, 'e_magic', 'Magic number (MZ)'),
@@ -78,7 +79,7 @@ export default class BlockReader {
     return this.readStructure(struct)
   }
 
-  /** Читает информацию из NT заголовка */
+  /** Reads NT header */
   readNTHeader (): Array<DataBlock> {
     let struct: Array<DataBlockDesk> = [
       this._desc(DWord, 'Signature', 'PE\\0\\0'),

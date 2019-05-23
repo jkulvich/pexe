@@ -1,24 +1,24 @@
 // @flow
 /*
-Класс занимается обработкой байтов и различными их конвертациями
- */
+Bytes manipulation
+*/
 
 import * as Errors from './errors'
 
 export default class Bytes {
-  /** Проверяет, что число является байтом */
+  /** Determines that number is byte */
   static isByte (byte: number): boolean {
     return typeof byte === typeof Number() && byte >= 0 && byte <= 255
   }
 
-  /** Проверяет, что строка является шеснадцатеричным байтом */
+  /** Determines that string is hex byte (2 chars) */
   static isHex (hex: string): boolean {
     if (typeof hex !== typeof String()) return false
     if (hex.length !== 2) return false
     return (/[0-9a-f]{2}/).test(hex)
   }
 
-  /** Проверяет, что строка содержит шеснадцатеричный массив */
+  /** Determines that string is hex array */
   static isHexString (hexs: string): boolean {
     if (typeof hexs !== typeof String()) return false
     if (hexs.length % 2 !== 0) return false
@@ -31,14 +31,14 @@ export default class Bytes {
     } else throw new Errors.BytesError('unexpected null after regexp')
   }
 
-  /** Проверяет, что число целое и положительное */
+  /** Determines that number is integer and positive */
   static isPosInt (num: number): boolean {
     return Math.abs(num | 0) === num
   }
 
   /**
-   * Возвращает строку из двух сиволов являющуюся шеснадцатеричным представлением байта
-   * @param {number} byte - байт [0-255]
+   * Returns 2 chars hex string equals given byte
+   * @param {number} byte
    * @returns {string}
    */
   static byteToHex (byte: number): string {
@@ -49,8 +49,8 @@ export default class Bytes {
   }
 
   /**
-   * Возвращает байт по переданным одному или двум символам, например 5D => 93
-   * @param {string} hex - 1 или 2 символа
+   * Returns byte by given hex string
+   * @param {string} hex - 2 chars
    * @returns {number}
    */
   static hexToByte (hex: string): number {
@@ -61,9 +61,9 @@ export default class Bytes {
   }
 
   /**
-   * Возвращает hex строку эквивалентную массиву байт [77, 90] => 5A4D
-   * @param arr {number[]} - массив байт
-   * @param align {number} - выравнивание строки до указанного количества байт
+   * Returns hex string equals given bytes array
+   * @param arr {number[]}
+   * @param align {number} - left zero bytes count alignment
    * @returns {string}
    */
   static arrayToHex (arr: Uint8Array, align: number = 0): string {
@@ -76,8 +76,8 @@ export default class Bytes {
   }
 
   /**
-   * Возвращает массив байт по шеснадцатиричной строке, например 5A4D => [77, 90]
-   * @param hexs {string} - hex строка
+   * Returns bytes array by given hex string
+   * @param hexs {string}
    * @returns {number[]}
    */
   static hexToArray (hexs: string): Uint8Array {
@@ -96,8 +96,8 @@ export default class Bytes {
   }
 
   /**
-   * Возвращает число из массива байт, например [77, 90] => 23117
-   * @param arr {number[]} - массив байт
+   * Returns number by given bytes array
+   * @param arr {number[]}
    * @returns {number}
    */
   static arrayToNumber (arr: Uint8Array): number {
@@ -105,8 +105,8 @@ export default class Bytes {
   }
 
   /**
-   * Возвращает массив байт из числа, например 23117 => [77, 90]
-   * @param num {number} - целое позитивное число
+   * Returns bytes array by given number
+   * @param num {number}
    * @returns {number[]}
    */
   static numberToArray (num: number): Uint8Array {
@@ -120,7 +120,7 @@ export default class Bytes {
   }
 
   /**
-   * Возвращает массив байт на основе строки смиволов (каждый символ - 1 байт), например "MZ" => [77, 90]
+   * Returns bytes array by given text
    * @param str {string}
    * @returns {Array}
    */
@@ -129,7 +129,7 @@ export default class Bytes {
   }
 
   /**
-   * Возвращает строку символов на основе массива байт, например [77, 90] => "MZ"
+   * Returns text by given bytes array
    * @param arr {number[]}
    * @returns {string}
    */
@@ -138,7 +138,7 @@ export default class Bytes {
   }
 
   /**
-   * Переводит число в шеснадцатеричное представление и использует выравнивание если указано
+   * Returns hex string by given number
    * @param num {number}
    * @param align {number}
    * @returns {string}
@@ -148,8 +148,8 @@ export default class Bytes {
   }
 
   /**
-   * Переводит шеснадцатеричное число в десятичнное представление
-   * @param hex {}
+   * Returns number by given hex string
+   * @param hex {string}
    * @returns {number}
    */
   static hexToNumber (hex: string): number {

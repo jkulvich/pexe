@@ -1,12 +1,12 @@
 // @flow
 /*
-Содержит методы чтения файла на уровне байт
+Reads file by byte per byte
 */
 
 import * as Errors from './errors'
 import Bytes from '../Bytes'
 
-/** Структура описания информационного блока */
+/** Information block scheme */
 export type DataBlock = {
   size: number,
   name: string,
@@ -19,46 +19,44 @@ export type DataBlock = {
   hex: string,
 }
 
-/** Чтение и разбор массива байт */
+/** Reading and parsing byte array */
 export default class FileReader {
-  /** Байты рабочего файла */
   _bytes: Uint8Array
-  /** Указатель на текущую позицию в файле */
   pointer: number = 0
 
   constructor (bytes?: Uint8Array) {
     if (bytes) this.setFile(bytes)
   }
 
-  /** Устанавливает новый рабочий файл */
+  /** Set new working file */
   setFile (bytes: Uint8Array): void {
     this._bytes = bytes
     this.pointer = 0
   }
 
-  /** Проверяет, находится ли указатель в конце файла */
+  /** Is pointer in end of file */
   isEOF (): boolean {
     return this.pointer >= this._bytes.length - 1
   }
 
-  /** Читает следующий байт или выбрасывает исключение, если конец файла */
+  /** Read next byte or throw exception */
   readNext (): number {
     if (!this.isEOF()) return this._bytes[this.pointer++]
     else throw new Errors.FileReaderEOFError(`end of file`)
   }
 
-  /** Возвращает логическое значение, говорящее, возможно ли прочитать следующее количество байт прежде чем файл закончиться **/
+  /** Determines that can read given count of bytes **/
   canRead (count: number): boolean {
     return this.pointer + count <= this._bytes.length
   }
 
-  /** Читает несколько байт и возвращает их, выбрасывает исключение если достигнут конец файла **/
+  /** Reads given count of bytes or throws exception **/
   readArray (count: number): Uint8Array {
     if (this.canRead(count)) return new Uint8Array(count).map(() => this.readNext())
     else throw new Errors.FileReaderEOFError(`end of file`)
   }
 
-  /** Читает блок и составляет по нему описание */
+  /** Reads block and makes block with description */
   readBlock (count: number, name: string = '', desc: string = ''): DataBlock {
     let offset = this.pointer
     let block = this.readArray(count)
@@ -75,7 +73,7 @@ export default class FileReader {
       offset: offset,
       type: types[count] || 'Data',
       raw: block,
-      num: Bytes.arrayToNumber(block),
+      num: count <= 6 ? Bytes.arrayToNumber(block) : 0,
       text: Bytes.arrayToString(block),
       hex: Bytes.arrayToHex(block)
     }
