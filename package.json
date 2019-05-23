@@ -1,0 +1,40 @@
+{
+  "version": "0.1.0",
+  "name": "pexe",
+  "description": "JavaScript library for parsing Windows executable files",
+  "scripts": {
+    "test": "flow && standard ./src/**/*.js --parser babel-eslint",
+    "build": "webpack"
+  },
+  "main": "src/main.js",
+  "module": "src/main.js",
+  "author": "jkulvich",
+  "repository": "https://github.com/jkulvich/pexe",
+  "license": "MIT",
+  "private": false,
+  "keywords": [
+    "windows",
+    "executables",
+    "parser"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-proposal-json-strings": "^7.2.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@babel/plugin-syntax-import-meta": "^7.2.0",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-flow": "^7.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.6",
+    "babel-polyfill": "^6.26.0",
+    "flow": "^0.2.3",
+    "flow-bin": "^0.98.1",
+    "jsdoc": "^3.6.2",
+    "standard": "^12.0.1",
+    "webpack": "^4.32.1",
+    "webpack-cli": "^3.3.2"
+  },
+  "dependencies": {}
+}
