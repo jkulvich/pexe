@@ -1,24 +1,24 @@
-/** Базовый класс ошибки модуля */
+/** Base error */
 export class BytesError extends Error {
   name = 'BytesError'
 }
 
-/** Происходит если число не байт, т.е. не лежит в диапазоне [0-255] */
+/** If present number isn't byte */
 export class BytesNotByteError extends BytesError {
   name = 'BytesNotByteError'
 }
 
-/** Происходит если число не hex строка содержащая одно число */
+/** If present string isn't one hex byte (2 chars) */
 export class BytesNotHexByteError extends BytesError {
   name = 'BytesNotHexByteError'
 }
 
-/** Происходит когда строка не является массивом байт */
+/** If present array isn't array of hex numbers */
 export class BytesNotHexStringError extends BytesError {
   name = 'BytesNotHexStringError'
 }
 
-/** Происходит когда число не является целым позитивным */
+/** If present number isn't positive integer */
 export class BytesNotPosIntError extends BytesError {
   name = 'BytesNotPosIntError'
 }

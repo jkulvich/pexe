@@ -1,9 +1,9 @@
-/** Базовый класс ошибки модуля */
+/** Base error */
 export class BlockReaderError extends Error {
   name = 'BlockReaderError'
 }
 
-/** Если не установлен инструмент чтения файла */
+/** If FileReader is not set */
 export class BlockReaderEmptyFileReaderError extends BlockReaderError {
   name = 'BlockReaderEmptyFileReaderError'
 }

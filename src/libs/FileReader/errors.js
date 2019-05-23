@@ -1,9 +1,9 @@
-/** Базовый класс ошибки модуля */
+/** Base error */
 export class FileReaderError extends Error {
   name = 'FileReaderError'
 }
 
-/** Когда достигнут конец файла и чтение невозможно */
+/** If end of file and can't read next */
 export class FileReaderEOFError extends FileReaderError {
   name = 'FileReaderEOFError'
 }

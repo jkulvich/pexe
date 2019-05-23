@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PEXE Test</title>
+</head>
+<body>
+<script src="./pexe.js"></script>
+<script>
+  (async () => {
+
+    let pexe = new Pexe()
+    await pexe.fetchFile('./soft/win1.exe')
+    console.log(pexe.parse())
+
+  })();
+</script>
+</body>
+</html>

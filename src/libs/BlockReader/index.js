@@ -1,24 +1,32 @@
+// @flow
 /*
-Пресеты для чтения распространённых блоков
+Presets for known data structures
  */
 
-import FileReader, { DataBlock } from '../FileReader'
+import FileReader from '../FileReader'
 import * as Errors from './errors'
+
+import type { DataBlock } from '../FileReader'
+import type {
+  DOSHeader,
+  NTHeader,
+  OptionalHeader,
+  FileHeader
+} from '../ExeFile/struct'
 
 const Byte = 1
 const Word = 2
 const DWord = 4
 
-/** Описание блока данных для извлечения */
+/** DataBlock description for next extraction */
 export type DataBlockDesk = {
   size: number,
   name: string,
   desc: string
 }
 
-/** Читает блоки информации из файла */
+/** Reads structures from file */
 export default class BlockReader {
-  /** Инструмент чтения файла */
   _reader: FileReader
 
   constructor (fileReader?: FileReader) {
@@ -27,19 +35,19 @@ export default class BlockReader {
     }
   }
 
-  /** Устанавливает инструмент чтения файла */
+  /** FileReader setter */
   setReader (fileReader: FileReader) {
     this._reader = fileReader
   }
 
-  /** Устанавливает позицию указателя в файле */
+  /** FileReader pointer setter */
   setPointer (pos: number): BlockReader {
     if (!this._reader) throw new Errors.BlockReaderEmptyFileReaderError(`file reader is not set`)
     this._reader.pointer = pos
     return this
   }
 
-  /** Читает структуру по её описанию */
+  /** Reads structure by structure description */
   readStructure (struct: Array<DataBlockDesk>): Array<DataBlock> {
     if (!this._reader) throw new Errors.BlockReaderEmptyFileReaderError(`file reader is not set`)
     let blocks: Array<DataBlock> = []
@@ -47,14 +55,27 @@ export default class BlockReader {
     return blocks
   }
 
-  /** Создаёт новую структуру описания блока */
+  /**
+   * Convert DataBlock array to DataBlock map by name
+   * @param block
+   * @returns {Object}
+   */
+  convertStructureToMap (block: Array<DataBlock>): { [string]: DataBlock } {
+    let map: { [string]: DataBlock } = {}
+    block.forEach(b => {
+      map[b.name] = b
+    })
+    return map
+  }
+
+  /** Creates new structure description */
   _desc (size: number, name: string, desc: string = ''): DataBlockDesk {
     return { size, name, desc }
   }
 
-  /** Читает информацию из DOS заголовка */
-  readDOSHeader (): Array<DataBlock> {
-    let struct: Array<DataBlockDesk> = [
+  /** Reads DOS header */
+  readDOSHeader (): DOSHeader {
+    let structdef: Array<DataBlockDesk> = [
       this._desc(Word, 'e_magic', 'Magic number (MZ)'),
       this._desc(Word, 'e_cblp', 'Bytes on last page of file'),
       this._desc(Word, 'e_cp', 'Pages in file'),
@@ -75,22 +96,28 @@ export default class BlockReader {
       this._desc(Word * 10, 'e_res2', 'Reserved'),
       this._desc(Word, 'e_lfanew', 'File address of new exe header')
     ]
-    return this.readStructure(struct)
+    let struct = this.readStructure(structdef)
+    return this.convertStructureToMap(struct)
   }
 
-  /** Читает информацию из NT заголовка */
-  readNTHeader (): Array<DataBlock> {
-    let struct: Array<DataBlockDesk> = [
-      this._desc(DWord, 'Signature', 'PE\\0\\0'),
-      // COFF
+  /** Reads File header (or COFF) */
+  readFileHeader (): FileHeader {
+    let structdef: Array<DataBlockDesk> = [
       this._desc(Word, 'Machine', 'Architecture type of the computer'),
       this._desc(Word, 'NumberOfSections', 'Size of the section table'),
       this._desc(DWord, 'TimeDataStamp', 'Date and time the image was created'),
       this._desc(DWord, 'PointerToSymbolTable', 'Offset of the symbol table, or zero if no COFF symbol table exists'),
       this._desc(DWord, 'NumberOfSymbols', 'Number of symbols in the symbol table'),
       this._desc(Word, 'SizeOfOptionalHeader', 'NtOptional32Header'),
-      this._desc(Word, 'Characteristics', 'ExecutableImage, 32BitMachine'),
-      // Optional header
+      this._desc(Word, 'Characteristics', 'ExecutableImage, 32BitMachine')
+    ]
+    let struct = this.readStructure(structdef)
+    return this.convertStructureToMap(struct)
+  }
+
+  /** Reads optional header */
+  readOptionalHeader (): OptionalHeader {
+    let structdef: Array<DataBlockDesk> = [
       this._desc(Word, 'Magic', 'PE32 - State of the image file'),
       this._desc(Byte, 'MajorLinkerVersion', ''),
       this._desc(Byte, 'MinorLinkerVersion', ''),
@@ -122,6 +149,21 @@ export default class BlockReader {
       this._desc(DWord, 'LoaderFlags', 'Obsolete'),
       this._desc(DWord, 'NumberOfRvaAndSizes', 'Number of directory entries in the remainder of the optional header')
     ]
-    return this.readStructure(struct)
+    let struct = this.readStructure(structdef)
+    return this.convertStructureToMap(struct)
+  }
+
+  /** Reads NT header */
+  readNTHeader (): NTHeader {
+    let structdef: Array<DataBlockDesk> = [
+      this._desc(DWord, 'Signature', 'PE\\0\\0')
+    ]
+    let struct = this.readStructure(structdef)
+    let map: Object = this.convertStructureToMap(struct)
+
+    map.file = this.readFileHeader()
+    map.optional = this.readOptionalHeader()
+
+    return map
   }
 }
