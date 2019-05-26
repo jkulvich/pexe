@@ -3,6 +3,8 @@
 Code to text decoder
 */
 
+import type { SectionHeader } from '../ExeFile/sectionHeader'
+
 export default class DataDictionary {
   /** Decode architecture [Machine] */
   static decodeMachine (id: number): string {
@@ -148,5 +150,19 @@ export default class DataDictionary {
     let dllcharsList = []
     for (let code in dllchars) if ((id & +code) === +code) dllcharsList.push(dllchars[code])
     return dllcharsList
+  }
+
+  static decodeSectionsName (sections: Array<SectionHeader>): Array<string> {
+    let names = []
+    sections.forEach(section => {
+      let nonzero = false
+      let name = []
+      section.Name.raw.reverse().forEach(c => {
+        if (c !== 0) nonzero = true
+        if (nonzero) name.push(c)
+      })
+      names.push(String.fromCharCode(...name.reverse()))
+    })
+    return names
   }
 }

@@ -167,7 +167,7 @@ module.exports = _possibleConstructorReturn;
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var setPrototypeOf = __webpack_require__(9);
+var setPrototypeOf = __webpack_require__(10);
 
 function _inherits(subClass, superClass) {
   if (typeof superClass !== "function" && superClass !== null) {
@@ -236,7 +236,7 @@ module.exports = _typeof;
 
 var getPrototypeOf = __webpack_require__(3);
 
-var setPrototypeOf = __webpack_require__(9);
+var setPrototypeOf = __webpack_require__(10);
 
 var isNativeFunction = __webpack_require__(14);
 
@@ -280,6 +280,22 @@ module.exports = _wrapNativeSuper;
 
 /***/ }),
 /* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var arrayWithoutHoles = __webpack_require__(16);
+
+var iterableToArray = __webpack_require__(17);
+
+var nonIterableSpread = __webpack_require__(18);
+
+function _toConsumableArray(arr) {
+  return arrayWithoutHoles(arr) || iterableToArray(arr) || nonIterableSpread();
+}
+
+module.exports = _toConsumableArray;
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports) {
 
 function _setPrototypeOf(o, p) {
@@ -294,14 +310,14 @@ function _setPrototypeOf(o, p) {
 module.exports = _setPrototypeOf;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(13);
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -341,22 +357,6 @@ function _asyncToGenerator(fn) {
 }
 
 module.exports = _asyncToGenerator;
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var arrayWithoutHoles = __webpack_require__(16);
-
-var iterableToArray = __webpack_require__(17);
-
-var nonIterableSpread = __webpack_require__(18);
-
-function _toConsumableArray(arr) {
-  return arrayWithoutHoles(arr) || iterableToArray(arr) || nonIterableSpread();
-}
-
-module.exports = _toConsumableArray;
 
 /***/ }),
 /* 13 */
@@ -1104,7 +1104,7 @@ module.exports = _isNativeFunction;
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var setPrototypeOf = __webpack_require__(9);
+var setPrototypeOf = __webpack_require__(10);
 
 function isNativeReflectConstruct() {
   if (typeof Reflect === "undefined" || !Reflect.construct) return false;
@@ -1182,11 +1182,11 @@ module.exports = _nonIterableSpread;
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
-var regenerator = __webpack_require__(10);
+var regenerator = __webpack_require__(11);
 var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/asyncToGenerator.js
-var asyncToGenerator = __webpack_require__(11);
+var asyncToGenerator = __webpack_require__(12);
 var asyncToGenerator_default = /*#__PURE__*/__webpack_require__.n(asyncToGenerator);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/classCallCheck.js
@@ -1284,7 +1284,7 @@ function (_FileReaderError) {
   return FileReaderEOFError;
 }(errors_FileReaderError);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/toConsumableArray.js
-var toConsumableArray = __webpack_require__(12);
+var toConsumableArray = __webpack_require__(9);
 var toConsumableArray_default = /*#__PURE__*/__webpack_require__.n(toConsumableArray);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/typeof.js
@@ -1761,7 +1761,7 @@ function () {
         offset: offset,
         type: types[count] || 'Data',
         raw: block,
-        num: count <= 6 ? Bytes_Bytes.arrayToNumber(block) : 0,
+        num: Bytes_Bytes.arrayToNumber(block),
         text: Bytes_Bytes.arrayToString(block),
         hex: Bytes_Bytes.arrayToHex(block)
       };
@@ -1945,7 +1945,9 @@ function () {
     value: function readOptionalHeader() {
       var structdef = [this._desc(Word, 'Magic', 'PE32 - State of the image file'), this._desc(Byte, 'MajorLinkerVersion', ''), this._desc(Byte, 'MinorLinkerVersion', ''), this._desc(DWord, 'SizeOfCode', 'Size of the code section'), this._desc(DWord, 'SizeOfInitializedData', 'Size of the initialized data section'), this._desc(DWord, 'SizeOfUninitializedData', 'Size of the uninitialized data section'), this._desc(DWord, 'AddressOfEntryPoint', 'Pointer to the entry point function, relative to the image base address, or zero if no entry point is present'), this._desc(DWord, 'BaseOfCode', 'Pointer to the beginning of the code section, relative to the image base'), this._desc(DWord, 'BaseOfData', 'Pointer to the beginning of the data section, relative to the image base'), this._desc(DWord, 'ImageBase', 'Preferred address of the first byte of the image when it is loaded in memory'), this._desc(DWord, 'SectionAlignment', 'Alignment of the section loaded in memory'), this._desc(DWord, 'FileAlignment', 'Alignment of the raw data of sections in the image file'), this._desc(Word, 'MajorOperatingSystemVersion', 'Major version number of the required operating system'), this._desc(Word, 'MinorOperatingSystemVersion', 'Minor version number of the required operating system'), this._desc(Word, 'MajorImageVersion', ''), this._desc(Word, 'MinorImageVersion', ''), this._desc(Word, 'MajorSubsystemVersion', ''), this._desc(Word, 'MinorSubsystemVersion', ''), this._desc(DWord, 'Win32VersionValue', 'Reserved'), this._desc(DWord, 'SizeOfImage', 'Size of the image including all headers'), this._desc(DWord, 'SizeOfHeaders', ''), this._desc(DWord, 'CheckSum', 'Image file checksum'), this._desc(Word, 'Subsystem', 'WindowsCui - Subsystem required to run this image'), this._desc(Word, 'DllCharacteristics', 'DynamicBase, NxCompat, TerminalServerAware - DLL characteristics of the image'), this._desc(DWord, 'SizeOfStackReserve', 'Number of bytes to reserve for the stack'), this._desc(DWord, 'SizeOfStackCommit', 'Number of bytes to commit for the stack'), this._desc(DWord, 'SizeOfHeapReserve', 'Number of bytes to reserve for the local heap'), this._desc(DWord, 'SizeOfHeapCommit', 'Number of bytes to commit for the local heap'), this._desc(DWord, 'LoaderFlags', 'Obsolete'), this._desc(DWord, 'NumberOfRvaAndSizes', 'Number of directory entries in the remainder of the optional header')];
       var struct = this.readStructure(structdef);
-      return this.convertStructureToMap(struct);
+      var map = this.convertStructureToMap(struct);
+      map.DataDirectory = this.readDataDirectories();
+      return map;
     }
     /** Reads NT header */
 
@@ -1959,6 +1961,50 @@ function () {
       map.optional = this.readOptionalHeader();
       return map;
     }
+    /** Reads one data directory block */
+
+  }, {
+    key: "readDataDirectory",
+    value: function readDataDirectory() {
+      var structdef = [this._desc(DWord, 'VirtualAddress', ''), this._desc(DWord, 'Size', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+    /** Reads 16 DataDirectory blocks */
+
+  }, {
+    key: "readDataDirectories",
+    value: function readDataDirectories() {
+      var arr = [];
+
+      for (var i = 0; i < 16; i++) {
+        arr.push(this.readDataDirectory());
+      }
+
+      return arr;
+    }
+    /** Reads section */
+
+  }, {
+    key: "readSection",
+    value: function readSection() {
+      var structdef = [this._desc(Byte * 8, 'Name', ''), this._desc(DWord, 'VirtualSize', ''), this._desc(DWord, 'VirtualAddress', ''), this._desc(DWord, 'SizeOfRawData', ''), this._desc(DWord, 'PointerToRawData', ''), this._desc(DWord, 'PointerToRelocations', ''), this._desc(DWord, 'PointerToLinenumbers', ''), this._desc(Word, 'NumberOfRelocations', ''), this._desc(Word, 'NumberOfLinenumbers', ''), this._desc(DWord, 'Characteristics', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+    /** Reads given number of sections */
+
+  }, {
+    key: "readSections",
+    value: function readSections(count) {
+      var arr = [];
+
+      for (var i = 0; i < count; i++) {
+        arr.push(this.readSection());
+      }
+
+      return arr;
+    }
   }]);
 
   return BlockReader;
@@ -1966,6 +2012,7 @@ function () {
 
 
 // CONCATENATED MODULE: ./src/libs/DataDictionary/index.js
+
 
 
 
@@ -2076,6 +2123,21 @@ function () {
 
       return dllcharsList;
     }
+  }, {
+    key: "decodeSectionsName",
+    value: function decodeSectionsName(sections) {
+      var names = [];
+      sections.forEach(function (section) {
+        var nonzero = false;
+        var name = [];
+        section.Name.raw.reverse().forEach(function (c) {
+          if (c !== 0) nonzero = true;
+          if (nonzero) name.push(c);
+        });
+        names.push(String.fromCharCode.apply(String, toConsumableArray_default()(name.reverse())));
+      });
+      return names;
+    }
   }]);
 
   return DataDictionary;
@@ -2176,7 +2238,8 @@ function () {
         headers: {
           dos: {},
           nt: {}
-        }
+        },
+        sections: []
       };
       var exe = file;
       var breader = new BlockReader_BlockReader(this._reader);
@@ -2193,6 +2256,12 @@ function () {
       if (lfanew > 64 && lfanew < exe.bytes.length - 512) {
         exe.headers.nt = breader.setPointer(lfanew).readNTHeader();
         if (exe.headers.nt.Signature.text === 'PE\0\0') exe.meta.isNT = true;
+      } // Read sections headers
+
+
+      if (exe.meta.isNT) {
+        exe.sections = breader.readSections(exe.headers.nt.file.NumberOfSections.num);
+        exe.meta.sections = DataDictionary_DataDictionary.decodeSectionsName(exe.sections);
       } // Decode user-friendly information
 
 

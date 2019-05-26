@@ -7,12 +7,12 @@ import FileReader from '../FileReader'
 import * as Errors from './errors'
 
 import type { DataBlock } from '../FileReader'
-import type {
-  DOSHeader,
-  NTHeader,
-  OptionalHeader,
-  FileHeader
-} from '../ExeFile/struct'
+import type { DosHeader } from '../ExeFile/dosHeader'
+import type { FileHeader } from '../ExeFile/fileHeader'
+import type { OptionalHeader } from '../ExeFile/optionalHeader'
+import type { NtHeader } from '../ExeFile/ntHeader'
+import type { DataDirectory } from '../ExeFile/dataDirectory'
+import type { SectionHeader } from '../ExeFile/sectionHeader'
 
 const Byte = 1
 const Word = 2
@@ -74,7 +74,7 @@ export default class BlockReader {
   }
 
   /** Reads DOS header */
-  readDOSHeader (): DOSHeader {
+  readDOSHeader (): DosHeader {
     let structdef: Array<DataBlockDesk> = [
       this._desc(Word, 'e_magic', 'Magic number (MZ)'),
       this._desc(Word, 'e_cblp', 'Bytes on last page of file'),
@@ -150,11 +150,15 @@ export default class BlockReader {
       this._desc(DWord, 'NumberOfRvaAndSizes', 'Number of directory entries in the remainder of the optional header')
     ]
     let struct = this.readStructure(structdef)
-    return this.convertStructureToMap(struct)
+    let map: Object = this.convertStructureToMap(struct)
+
+    map.DataDirectory = this.readDataDirectories()
+
+    return map
   }
 
   /** Reads NT header */
-  readNTHeader (): NTHeader {
+  readNTHeader (): NtHeader {
     let structdef: Array<DataBlockDesk> = [
       this._desc(DWord, 'Signature', 'PE\\0\\0')
     ]
@@ -165,5 +169,47 @@ export default class BlockReader {
     map.optional = this.readOptionalHeader()
 
     return map
+  }
+
+  /** Reads one data directory block */
+  readDataDirectory (): DataDirectory {
+    let structdef: Array<DataBlockDesk> = [
+      this._desc(DWord, 'VirtualAddress', ''),
+      this._desc(DWord, 'Size', '')
+    ]
+    let struct = this.readStructure(structdef)
+    return this.convertStructureToMap(struct)
+  }
+
+  /** Reads 16 DataDirectory blocks */
+  readDataDirectories (): Array<DataDirectory> {
+    let arr = []
+    for (let i = 0; i < 16; i++) arr.push(this.readDataDirectory())
+    return arr
+  }
+
+  /** Reads section */
+  readSection (): SectionHeader {
+    let structdef: Array<DataBlockDesk> = [
+      this._desc(Byte * 8, 'Name', ''),
+      this._desc(DWord, 'VirtualSize', ''),
+      this._desc(DWord, 'VirtualAddress', ''),
+      this._desc(DWord, 'SizeOfRawData', ''),
+      this._desc(DWord, 'PointerToRawData', ''),
+      this._desc(DWord, 'PointerToRelocations', ''),
+      this._desc(DWord, 'PointerToLinenumbers', ''),
+      this._desc(Word, 'NumberOfRelocations', ''),
+      this._desc(Word, 'NumberOfLinenumbers', ''),
+      this._desc(DWord, 'Characteristics', '')
+    ]
+    let struct = this.readStructure(structdef)
+    return this.convertStructureToMap(struct)
+  }
+
+  /** Reads given number of sections */
+  readSections (count: number): Array<SectionHeader> {
+    let arr = []
+    for (let i = 0; i < count; i++) arr.push(this.readSection())
+    return arr
   }
 }

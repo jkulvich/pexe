@@ -73,7 +73,7 @@ export default class FileReader {
       offset: offset,
       type: types[count] || 'Data',
       raw: block,
-      num: count <= 6 ? Bytes.arrayToNumber(block) : 0,
+      num: Bytes.arrayToNumber(block),
       text: Bytes.arrayToString(block),
       hex: Bytes.arrayToHex(block)
     }
