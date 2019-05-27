@@ -46,20 +46,23 @@ export default class Pexe {
   sectionRVA - RVA секции (это поле хранится внутри секции)
    */
 
-  defSection (rva: number, sections: Array<SectionHeader>, alignment: number): number | null {
+  /**
+   * Converts RVA to RAW
+   * @param {number} rva
+   * @param {Array<SectionHeader>} sections
+   * @param {number} alignment
+   * @returns {number | null} raw address or null if incorrect sections
+   */
+  rvaToRaw (rva: number, sections: Array<SectionHeader>, alignment: number): number | null {
     let alignUp = (n, a) => Math.ceil(n / a) * a
     for (let i = 0; i < sections.length; i++) {
       let start = sections[i].VirtualAddress.num
       let end = start + alignUp(sections[i].VirtualSize.num, alignment)
-      if(rva >= start && rva < end) return i;
+      if (rva >= start && rva < end) {
+        return rva - sections[i].VirtualAddress.num + sections[i].PointerToRawData.num
+      }
     }
     return null
-  }
-
-  rvaToOffset (rva: number, sections: Array<SectionHeader>, alignment: number): number | null {
-    let indexSection = this.defSection(rva, sections, alignment)
-    if (indexSection === null) return null
-    return rva - sections[indexSection].VirtualAddress.num + sections[indexSection].PointerToRawData.num;
   }
 
   /**
@@ -100,8 +103,31 @@ export default class Pexe {
       exe.meta.sections = DataDictionary.decodeSectionsName(exe.sections)
     }
 
-    // Getting sections RVA
-    let s = this.defSection(0, exe.sections, exe.headers.nt.optional.SectionAlignment.num)
+    // Getting import tables
+    if (exe.meta.isNT) {
+      let alignment = exe.headers.nt.optional.SectionAlignment.num
+      let sections = exe.sections
+
+      let importRva = exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num
+      let importRaw = this.rvaToRaw(importRva, sections, alignment)
+
+      if (importRaw != null) {
+        breader.setPointer(importRaw)
+        for (let i = 0;; i++) {
+          let importDesc = breader.readImportDescriptor()
+          if (importDesc.OriginalFirstThunk === 0) break
+
+          // Достаём имена библиотек
+          let libnameRaw = this.rvaToRaw(importDesc.Name.num, sections, alignment)
+          if (libnameRaw == null) break //TODO: Такой ситуации не должно быть в рабочем exe'шнике
+          breader.savePointer()
+          let libname = breader.setPointer(libnameRaw).readString()
+          breader.restorePointer()
+          console.log(libname)
+
+        }
+      }
+    }
 
     // Decode user-friendly information
     if (exe.meta.isNT) {
@@ -114,6 +140,9 @@ export default class Pexe {
       exe.meta.subsystem = DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num)
       exe.meta.chars = DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num)
       exe.meta.dllChars = DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num)
+      exe.meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000)
+      exe.meta.isDLL = exe.meta.chars.includes('DLL')
+      exe.meta.is64 = exe.meta.magic === 'PE64'
     }
 
     return exe

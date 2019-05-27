@@ -1844,6 +1844,7 @@ Presets for known data structures
  */
 
 
+
 var Byte = 1;
 var Word = 2;
 var DWord = 4;
@@ -1857,6 +1858,8 @@ function () {
     classCallCheck_default()(this, BlockReader);
 
     defineProperty_default()(this, "_reader", void 0);
+
+    defineProperty_default()(this, "_pointerStack", []);
 
     if (fileReader) {
       this.setReader(fileReader);
@@ -1879,6 +1882,16 @@ function () {
       this._reader.pointer = pos;
       return this;
     }
+  }, {
+    key: "savePointer",
+    value: function savePointer() {
+      this._pointerStack.push(this._reader.pointer);
+    }
+  }, {
+    key: "restorePointer",
+    value: function restorePointer() {
+      if (this._pointerStack.length > 0) this._reader.pointer = this._pointerStack.pop();else throw new errors_BlockReaderError('pointer stack is empty, save pointer first');
+    }
     /** Reads structure by structure description */
 
   }, {
@@ -1892,6 +1905,22 @@ function () {
         return blocks.push(_this._reader.readBlock(s.size, s.name, s.desc));
       });
       return blocks;
+    }
+    /** Read zero-terminated string */
+
+  }, {
+    key: "readString",
+    value: function readString() {
+      var name = [];
+
+      for (;;) {
+        var _char = this._reader.readNext();
+
+        if (_char === 0) break;
+        name.push(_char);
+      }
+
+      return String.fromCharCode.apply(String, name);
     }
     /**
      * Convert DataBlock array to DataBlock map by name
@@ -2004,6 +2033,20 @@ function () {
       }
 
       return arr;
+    }
+  }, {
+    key: "readExportDirectory",
+    value: function readExportDirectory() {
+      var structdef = [this._desc(DWord, 'Characteristics', ''), this._desc(DWord, 'TimeDateStamp', ''), this._desc(Word, 'MajorVersion', ''), this._desc(Word, 'MinorVersion', ''), this._desc(DWord, 'Name', ''), this._desc(DWord, 'Base', ''), this._desc(DWord, 'NumberOfFunctions', ''), this._desc(DWord, 'NumberOfNames', ''), this._desc(DWord, 'AddressOfFunctions', ''), this._desc(DWord, 'AddressOfNames', ''), this._desc(DWord, 'AddressOfNameOrdinals', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+  }, {
+    key: "readImportDescriptor",
+    value: function readImportDescriptor() {
+      var structdef = [this._desc(DWord, 'OriginalFirstThunk', ''), this._desc(DWord, 'TimeDateStamp', ''), this._desc(DWord, 'ForwarderChain', ''), this._desc(DWord, 'Name', ''), this._desc(DWord, 'FirstThunk', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
     }
   }]);
 
@@ -2224,6 +2267,40 @@ function () {
 
       return fetchFile;
     }()
+    /*
+    RAW (file offset) = RVA - sectionRVA + rawSection // Смещение относительно начала файла
+    RVA (Relative Virtual Address) =  // Адрес относительно того, куда была выгружена программа
+    VA (Virtual Address) = ImageBase + RVA // Адрес относительно начала виртуальной памяти
+     rawSection - смещение до секции от начала файла
+    sectionRVA - RVA секции (это поле хранится внутри секции)
+     */
+
+    /**
+     * Converts RVA to RAW
+     * @param {number} rva
+     * @param {Array<SectionHeader>} sections
+     * @param {number} alignment
+     * @returns {number | null} raw address or null if incorrect sections
+     */
+
+  }, {
+    key: "rvaToRaw",
+    value: function rvaToRaw(rva, sections, alignment) {
+      var alignUp = function alignUp(n, a) {
+        return Math.ceil(n / a) * a;
+      };
+
+      for (var i = 0; i < sections.length; i++) {
+        var start = sections[i].VirtualAddress.num;
+        var end = start + alignUp(sections[i].VirtualSize.num, alignment);
+
+        if (rva >= start && rva < end) {
+          return rva - sections[i].VirtualAddress.num + sections[i].PointerToRawData.num;
+        }
+      }
+
+      return null;
+    }
     /**
      * Returns exe file info
      * @returns {ExeFile}
@@ -2262,6 +2339,29 @@ function () {
       if (exe.meta.isNT) {
         exe.sections = breader.readSections(exe.headers.nt.file.NumberOfSections.num);
         exe.meta.sections = DataDictionary_DataDictionary.decodeSectionsName(exe.sections);
+      } // Getting import tables
+
+
+      if (exe.meta.isNT) {
+        var alignment = exe.headers.nt.optional.SectionAlignment.num;
+        var sections = exe.sections;
+        var importRva = exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num;
+        var importRaw = this.rvaToRaw(importRva, sections, alignment);
+
+        if (importRaw != null) {
+          breader.setPointer(importRaw);
+
+          for (var i = 0;; i++) {
+            var importDesc = breader.readImportDescriptor();
+            if (importDesc.OriginalFirstThunk === 0) break;
+            var libnameRaw = this.rvaToRaw(importDesc.Name.num, sections, alignment);
+            if (libnameRaw == null) break;
+            breader.savePointer();
+            var libname = breader.setPointer(libnameRaw).readString();
+            breader.restorePointer();
+            console.log(libname);
+          }
+        }
       } // Decode user-friendly information
 
 
@@ -2272,6 +2372,9 @@ function () {
         exe.meta.subsystem = DataDictionary_DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num);
         exe.meta.chars = DataDictionary_DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num);
         exe.meta.dllChars = DataDictionary_DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num);
+        exe.meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000);
+        exe.meta.isDLL = exe.meta.chars.includes('DLL');
+        exe.meta.is64 = exe.meta.magic === 'PE64';
       }
 
       return exe;

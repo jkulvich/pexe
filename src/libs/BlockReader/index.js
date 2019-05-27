@@ -13,6 +13,9 @@ import type { OptionalHeader } from '../ExeFile/optionalHeader'
 import type { NtHeader } from '../ExeFile/ntHeader'
 import type { DataDirectory } from '../ExeFile/dataDirectory'
 import type { SectionHeader } from '../ExeFile/sectionHeader'
+import type { ExportDirectory } from '../ExeFile/exportDirectory'
+import type { ImportDescriptor } from '../ExeFile/importDescriptor'
+import { BlockReaderError } from './errors'
 
 const Byte = 1
 const Word = 2
@@ -28,6 +31,7 @@ export type DataBlockDesk = {
 /** Reads structures from file */
 export default class BlockReader {
   _reader: FileReader
+  _pointerStack: Array<number> = []
 
   constructor (fileReader?: FileReader) {
     if (fileReader) {
@@ -47,12 +51,33 @@ export default class BlockReader {
     return this
   }
 
+  savePointer () {
+    this._pointerStack.push(this._reader.pointer)
+  }
+
+  restorePointer () {
+    if (this._pointerStack.length > 0)
+      this._reader.pointer = this._pointerStack.pop()
+    else throw new BlockReaderError('pointer stack is empty, save pointer first')
+  }
+
   /** Reads structure by structure description */
   readStructure (struct: Array<DataBlockDesk>): Array<DataBlock> {
     if (!this._reader) throw new Errors.BlockReaderEmptyFileReaderError(`file reader is not set`)
     let blocks: Array<DataBlock> = []
     struct.forEach(s => blocks.push(this._reader.readBlock(s.size, s.name, s.desc)))
     return blocks
+  }
+
+  /** Read zero-terminated string */
+  readString (): string {
+    let name = []
+    for (; ;) {
+      let char = this._reader.readNext()
+      if (char === 0) break
+      name.push(char)
+    }
+    return String.fromCharCode(...name)
   }
 
   /**
@@ -211,5 +236,35 @@ export default class BlockReader {
     let arr = []
     for (let i = 0; i < count; i++) arr.push(this.readSection())
     return arr
+  }
+
+  readExportDirectory (): ExportDirectory {
+    let structdef: Array<DataBlockDesk> = [
+      this._desc(DWord, 'Characteristics', ''),
+      this._desc(DWord, 'TimeDateStamp', ''),
+      this._desc(Word, 'MajorVersion', ''),
+      this._desc(Word, 'MinorVersion', ''),
+      this._desc(DWord, 'Name', ''),
+      this._desc(DWord, 'Base', ''),
+      this._desc(DWord, 'NumberOfFunctions', ''),
+      this._desc(DWord, 'NumberOfNames', ''),
+      this._desc(DWord, 'AddressOfFunctions', ''),
+      this._desc(DWord, 'AddressOfNames', ''),
+      this._desc(DWord, 'AddressOfNameOrdinals', ''),
+    ]
+    let struct = this.readStructure(structdef)
+    return this.convertStructureToMap(struct)
+  }
+
+  readImportDescriptor (): ImportDescriptor {
+    let structdef: Array<DataBlockDesk> = [
+      this._desc(DWord, 'OriginalFirstThunk', ''),
+      this._desc(DWord, 'TimeDateStamp', ''),
+      this._desc(DWord, 'ForwarderChain', ''),
+      this._desc(DWord, 'Name', ''),
+      this._desc(DWord, 'FirstThunk', ''),
+    ]
+    let struct = this.readStructure(structdef)
+    return this.convertStructureToMap(struct)
   }
 }
