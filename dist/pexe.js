@@ -122,20 +122,6 @@ module.exports = _classCallCheck;
 /* 2 */
 /***/ (function(module, exports) {
 
-function _assertThisInitialized(self) {
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return self;
-}
-
-module.exports = _assertThisInitialized;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
@@ -146,12 +132,34 @@ function _getPrototypeOf(o) {
 module.exports = _getPrototypeOf;
 
 /***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+module.exports = _createClass;
+
+/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var _typeof = __webpack_require__(7);
 
-var assertThisInitialized = __webpack_require__(2);
+var assertThisInitialized = __webpack_require__(6);
 
 function _possibleConstructorReturn(self, call) {
   if (call && (_typeof(call) === "object" || typeof call === "function")) {
@@ -190,23 +198,15 @@ module.exports = _inherits;
 /* 6 */
 /***/ (function(module, exports) {
 
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
   }
+
+  return self;
 }
 
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-module.exports = _createClass;
+module.exports = _assertThisInitialized;
 
 /***/ }),
 /* 7 */
@@ -234,7 +234,7 @@ module.exports = _typeof;
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getPrototypeOf = __webpack_require__(3);
+var getPrototypeOf = __webpack_require__(2);
 
 var setPrototypeOf = __webpack_require__(10);
 
@@ -1194,7 +1194,7 @@ var classCallCheck = __webpack_require__(1);
 var classCallCheck_default = /*#__PURE__*/__webpack_require__.n(classCallCheck);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/createClass.js
-var createClass = __webpack_require__(6);
+var createClass = __webpack_require__(3);
 var createClass_default = /*#__PURE__*/__webpack_require__.n(createClass);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/defineProperty.js
@@ -1206,11 +1206,11 @@ var possibleConstructorReturn = __webpack_require__(4);
 var possibleConstructorReturn_default = /*#__PURE__*/__webpack_require__.n(possibleConstructorReturn);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/getPrototypeOf.js
-var getPrototypeOf = __webpack_require__(3);
+var getPrototypeOf = __webpack_require__(2);
 var getPrototypeOf_default = /*#__PURE__*/__webpack_require__.n(getPrototypeOf);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/assertThisInitialized.js
-var assertThisInitialized = __webpack_require__(2);
+var assertThisInitialized = __webpack_require__(6);
 var assertThisInitialized_default = /*#__PURE__*/__webpack_require__.n(assertThisInitialized);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/inherits.js
@@ -1840,7 +1840,7 @@ function (_BlockReaderError) {
 
 
 /*
-Presets for known data structures
+  Представляет методы для чтения блоков информации
  */
 
 
@@ -1848,9 +1848,9 @@ Presets for known data structures
 var Byte = 1;
 var Word = 2;
 var DWord = 4;
-/** DataBlock description for next extraction */
+/** Описание блока информации ля извлечения */
 
-/** Reads structures from file */
+/** Читает блоки информации из файла */
 var BlockReader_BlockReader =
 /*#__PURE__*/
 function () {
@@ -1865,7 +1865,7 @@ function () {
       this.setReader(fileReader);
     }
   }
-  /** FileReader setter */
+  /** Устанавливает инструмент чтения файла */
 
 
   createClass_default()(BlockReader, [{
@@ -1873,7 +1873,21 @@ function () {
     value: function setReader(fileReader) {
       this._reader = fileReader;
     }
-    /** FileReader pointer setter */
+    /** Возвращает инструмент чтения файла */
+
+  }, {
+    key: "getReader",
+    value: function getReader() {
+      return this._reader;
+    }
+    /** Возвращает байты файла */
+
+  }, {
+    key: "getFileBytes",
+    value: function getFileBytes() {
+      return this._reader.bytes;
+    }
+    /** Устанавливает позицию курсора в файле [//TODO: DEPRECATED, удалить this]*/
 
   }, {
     key: "setPointer",
@@ -1882,17 +1896,28 @@ function () {
       this._reader.pointer = pos;
       return this;
     }
+    /** Возвращает позицию указателя */
+
+  }, {
+    key: "getPointer",
+    value: function getPointer() {
+      return this._reader.pointer;
+    }
+    /** Сохраняет позицию курсора в стек */
+
   }, {
     key: "savePointer",
     value: function savePointer() {
       this._pointerStack.push(this._reader.pointer);
     }
+    /** Восстанавливает позицию курсора из стека */
+
   }, {
     key: "restorePointer",
     value: function restorePointer() {
       if (this._pointerStack.length > 0) this._reader.pointer = this._pointerStack.pop();else throw new errors_BlockReaderError('pointer stack is empty, save pointer first');
     }
-    /** Reads structure by structure description */
+    /** Читает массив блоков информации по массиву их описаний */
 
   }, {
     key: "readStructure",
@@ -1906,7 +1931,7 @@ function () {
       });
       return blocks;
     }
-    /** Read zero-terminated string */
+    /** Читает строку оканчивающуюся нулевым символом */
 
   }, {
     key: "readString",
@@ -1923,7 +1948,7 @@ function () {
       return String.fromCharCode.apply(String, name);
     }
     /**
-     * Convert DataBlock array to DataBlock map by name
+     * Конвертирует массив блоков информации в словарь по их именам
      * @param block
      * @returns {Object}
      */
@@ -1937,7 +1962,7 @@ function () {
       });
       return map;
     }
-    /** Creates new structure description */
+    /** Создаёт новый блок описания блока информации */
 
   }, {
     key: "_desc",
@@ -1948,105 +1973,6 @@ function () {
         name: name,
         desc: desc
       };
-    }
-    /** Reads DOS header */
-
-  }, {
-    key: "readDOSHeader",
-    value: function readDOSHeader() {
-      var structdef = [this._desc(Word, 'e_magic', 'Magic number (MZ)'), this._desc(Word, 'e_cblp', 'Bytes on last page of file'), this._desc(Word, 'e_cp', 'Pages in file'), this._desc(Word, 'e_crlc', 'Relocations'), this._desc(Word, 'e_cparhdr', 'Size of header in paragraphs'), this._desc(Word, 'e_minalloc', 'Minimum extra paragraphs needed'), this._desc(Word, 'e_maxalloc', 'Maximum extra paragraphs needed'), this._desc(Word, 'e_ss', 'Initial (relative) SS value'), this._desc(Word, 'e_sp', 'Initial SP value'), this._desc(Word, 'e_csum', 'Checksum'), this._desc(Word, 'e_ip', 'Initial IP value'), this._desc(Word, 'e_cs', 'Initial CS value'), this._desc(Word, 'e_lfarlc', 'File address of relocation table'), this._desc(Word, 'e_ovno', 'Overlay number'), this._desc(Word * 4, 'e_res', 'Reserved'), this._desc(Word, 'e_oemid', 'OEM identifier'), this._desc(Word, 'e_oeminfo', 'OEM information; e_oemid specific'), this._desc(Word * 10, 'e_res2', 'Reserved'), this._desc(Word, 'e_lfanew', 'File address of new exe header')];
-      var struct = this.readStructure(structdef);
-      return this.convertStructureToMap(struct);
-    }
-    /** Reads File header (or COFF) */
-
-  }, {
-    key: "readFileHeader",
-    value: function readFileHeader() {
-      var structdef = [this._desc(Word, 'Machine', 'Architecture type of the computer'), this._desc(Word, 'NumberOfSections', 'Size of the section table'), this._desc(DWord, 'TimeDataStamp', 'Date and time the image was created'), this._desc(DWord, 'PointerToSymbolTable', 'Offset of the symbol table, or zero if no COFF symbol table exists'), this._desc(DWord, 'NumberOfSymbols', 'Number of symbols in the symbol table'), this._desc(Word, 'SizeOfOptionalHeader', 'NtOptional32Header'), this._desc(Word, 'Characteristics', 'ExecutableImage, 32BitMachine')];
-      var struct = this.readStructure(structdef);
-      return this.convertStructureToMap(struct);
-    }
-    /** Reads optional header */
-
-  }, {
-    key: "readOptionalHeader",
-    value: function readOptionalHeader() {
-      var structdef = [this._desc(Word, 'Magic', 'PE32 - State of the image file'), this._desc(Byte, 'MajorLinkerVersion', ''), this._desc(Byte, 'MinorLinkerVersion', ''), this._desc(DWord, 'SizeOfCode', 'Size of the code section'), this._desc(DWord, 'SizeOfInitializedData', 'Size of the initialized data section'), this._desc(DWord, 'SizeOfUninitializedData', 'Size of the uninitialized data section'), this._desc(DWord, 'AddressOfEntryPoint', 'Pointer to the entry point function, relative to the image base address, or zero if no entry point is present'), this._desc(DWord, 'BaseOfCode', 'Pointer to the beginning of the code section, relative to the image base'), this._desc(DWord, 'BaseOfData', 'Pointer to the beginning of the data section, relative to the image base'), this._desc(DWord, 'ImageBase', 'Preferred address of the first byte of the image when it is loaded in memory'), this._desc(DWord, 'SectionAlignment', 'Alignment of the section loaded in memory'), this._desc(DWord, 'FileAlignment', 'Alignment of the raw data of sections in the image file'), this._desc(Word, 'MajorOperatingSystemVersion', 'Major version number of the required operating system'), this._desc(Word, 'MinorOperatingSystemVersion', 'Minor version number of the required operating system'), this._desc(Word, 'MajorImageVersion', ''), this._desc(Word, 'MinorImageVersion', ''), this._desc(Word, 'MajorSubsystemVersion', ''), this._desc(Word, 'MinorSubsystemVersion', ''), this._desc(DWord, 'Win32VersionValue', 'Reserved'), this._desc(DWord, 'SizeOfImage', 'Size of the image including all headers'), this._desc(DWord, 'SizeOfHeaders', ''), this._desc(DWord, 'CheckSum', 'Image file checksum'), this._desc(Word, 'Subsystem', 'WindowsCui - Subsystem required to run this image'), this._desc(Word, 'DllCharacteristics', 'DynamicBase, NxCompat, TerminalServerAware - DLL characteristics of the image'), this._desc(DWord, 'SizeOfStackReserve', 'Number of bytes to reserve for the stack'), this._desc(DWord, 'SizeOfStackCommit', 'Number of bytes to commit for the stack'), this._desc(DWord, 'SizeOfHeapReserve', 'Number of bytes to reserve for the local heap'), this._desc(DWord, 'SizeOfHeapCommit', 'Number of bytes to commit for the local heap'), this._desc(DWord, 'LoaderFlags', 'Obsolete'), this._desc(DWord, 'NumberOfRvaAndSizes', 'Number of directory entries in the remainder of the optional header')];
-      var struct = this.readStructure(structdef);
-      var map = this.convertStructureToMap(struct);
-      map.DataDirectory = this.readDataDirectories();
-      return map;
-    }
-    /** Reads NT header */
-
-  }, {
-    key: "readNTHeader",
-    value: function readNTHeader() {
-      var structdef = [this._desc(DWord, 'Signature', 'PE\\0\\0')];
-      var struct = this.readStructure(structdef);
-      var map = this.convertStructureToMap(struct);
-      map.file = this.readFileHeader();
-      map.optional = this.readOptionalHeader();
-      return map;
-    }
-    /** Reads one data directory block */
-
-  }, {
-    key: "readDataDirectory",
-    value: function readDataDirectory() {
-      var structdef = [this._desc(DWord, 'VirtualAddress', ''), this._desc(DWord, 'Size', '')];
-      var struct = this.readStructure(structdef);
-      return this.convertStructureToMap(struct);
-    }
-    /** Reads 16 DataDirectory blocks */
-
-  }, {
-    key: "readDataDirectories",
-    value: function readDataDirectories() {
-      var arr = [];
-
-      for (var i = 0; i < 16; i++) {
-        arr.push(this.readDataDirectory());
-      }
-
-      return arr;
-    }
-    /** Reads section */
-
-  }, {
-    key: "readSection",
-    value: function readSection() {
-      var structdef = [this._desc(Byte * 8, 'Name', ''), this._desc(DWord, 'VirtualSize', ''), this._desc(DWord, 'VirtualAddress', ''), this._desc(DWord, 'SizeOfRawData', ''), this._desc(DWord, 'PointerToRawData', ''), this._desc(DWord, 'PointerToRelocations', ''), this._desc(DWord, 'PointerToLinenumbers', ''), this._desc(Word, 'NumberOfRelocations', ''), this._desc(Word, 'NumberOfLinenumbers', ''), this._desc(DWord, 'Characteristics', '')];
-      var struct = this.readStructure(structdef);
-      return this.convertStructureToMap(struct);
-    }
-    /** Reads given number of sections */
-
-  }, {
-    key: "readSections",
-    value: function readSections(count) {
-      var arr = [];
-
-      for (var i = 0; i < count; i++) {
-        arr.push(this.readSection());
-      }
-
-      return arr;
-    }
-  }, {
-    key: "readExportDirectory",
-    value: function readExportDirectory() {
-      var structdef = [this._desc(DWord, 'Characteristics', ''), this._desc(DWord, 'TimeDateStamp', ''), this._desc(Word, 'MajorVersion', ''), this._desc(Word, 'MinorVersion', ''), this._desc(DWord, 'Name', ''), this._desc(DWord, 'Base', ''), this._desc(DWord, 'NumberOfFunctions', ''), this._desc(DWord, 'NumberOfNames', ''), this._desc(DWord, 'AddressOfFunctions', ''), this._desc(DWord, 'AddressOfNames', ''), this._desc(DWord, 'AddressOfNameOrdinals', '')];
-      var struct = this.readStructure(structdef);
-      return this.convertStructureToMap(struct);
-    }
-  }, {
-    key: "readImportDescriptor",
-    value: function readImportDescriptor() {
-      var structdef = [this._desc(DWord, 'OriginalFirstThunk', ''), this._desc(DWord, 'TimeDateStamp', ''), this._desc(DWord, 'ForwarderChain', ''), this._desc(DWord, 'Name', ''), this._desc(DWord, 'FirstThunk', '')];
-      var struct = this.readStructure(structdef);
-      return this.convertStructureToMap(struct);
     }
   }]);
 
@@ -2187,6 +2113,389 @@ function () {
 }();
 
 
+// CONCATENATED MODULE: ./src/libs/types.js
+
+
+var types_Type =
+/*#__PURE__*/
+function () {
+  function Type() {
+    classCallCheck_default()(this, Type);
+  }
+
+  createClass_default()(Type, null, [{
+    key: "Array",
+    value: function Array(element, count) {
+      return element * count;
+    }
+  }, {
+    key: "Data",
+    value: function Data(length) {
+      return length;
+    }
+  }, {
+    key: "Byte",
+    get: function get() {
+      return 1;
+    }
+  }, {
+    key: "Word",
+    get: function get() {
+      return Type.Byte * 2;
+    }
+  }, {
+    key: "DWord",
+    get: function get() {
+      return Type.Word * 2;
+    }
+  }, {
+    key: "QWord",
+    get: function get() {
+      return Type.DWord * 2;
+    }
+  }, {
+    key: "YWord",
+    get: function get() {
+      return Type.QWord * 2;
+    }
+  }]);
+
+  return Type;
+}();
+// CONCATENATED MODULE: ./src/libs/ExeFile/dosHeader.js
+
+
+
+
+
+
+
+var dosHeader_Word = 2;
+
+var dosHeader_BlockReaderDosHeader =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderDosHeader, _BlockReader);
+
+  function BlockReaderDosHeader() {
+    classCallCheck_default()(this, BlockReaderDosHeader);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderDosHeader).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderDosHeader, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(types_Type.Word, 'e_magic', 'Magic number (MZ)'), this._desc(types_Type.Word, 'e_cblp', 'Bytes on last page of file'), this._desc(types_Type.Word, 'e_cp', 'Pages in file'), this._desc(types_Type.Word, 'e_crlc', 'Relocations'), this._desc(types_Type.Word, 'e_cparhdr', 'Size of header in paragraphs'), this._desc(types_Type.Word, 'e_minalloc', 'Minimum extra paragraphs needed'), this._desc(types_Type.Word, 'e_maxalloc', 'Maximum extra paragraphs needed'), this._desc(types_Type.Word, 'e_ss', 'Initial (relative) SS value'), this._desc(types_Type.Word, 'e_sp', 'Initial SP value'), this._desc(types_Type.Word, 'e_csum', 'Checksum'), this._desc(types_Type.Word, 'e_ip', 'Initial IP value'), this._desc(types_Type.Word, 'e_cs', 'Initial CS value'), this._desc(types_Type.Word, 'e_lfarlc', 'File address of relocation table'), this._desc(types_Type.Word, 'e_ovno', 'Overlay number'), this._desc(types_Type.Array(types_Type.Word, 4), 'e_res', 'Reserved'), this._desc(types_Type.Word, 'e_oemid', 'OEM identifier'), this._desc(types_Type.Word, 'e_oeminfo', 'OEM information; e_oemid specific'), this._desc(types_Type.Array(types_Type.Word, 10), 'e_res2', 'Reserved'), this._desc(types_Type.Word, 'e_lfanew', 'File address of new exe header')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+  }]);
+
+  return BlockReaderDosHeader;
+}(BlockReader_BlockReader);
+
+
+// CONCATENATED MODULE: ./src/libs/ExeFile/fileHeader.js
+
+
+
+
+
+
+var fileHeader_Word = 2;
+var fileHeader_DWord = 4;
+
+var fileHeader_BlockReaderFileHeader =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderFileHeader, _BlockReader);
+
+  function BlockReaderFileHeader() {
+    classCallCheck_default()(this, BlockReaderFileHeader);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderFileHeader).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderFileHeader, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(fileHeader_Word, 'Machine', 'Architecture type of the computer'), this._desc(fileHeader_Word, 'NumberOfSections', 'Size of the section table'), this._desc(fileHeader_DWord, 'TimeDataStamp', 'Date and time the image was created'), this._desc(fileHeader_DWord, 'PointerToSymbolTable', 'Offset of the symbol table, or zero if no COFF symbol table exists'), this._desc(fileHeader_DWord, 'NumberOfSymbols', 'Number of symbols in the symbol table'), this._desc(fileHeader_Word, 'SizeOfOptionalHeader', 'NtOptional32Header'), this._desc(fileHeader_Word, 'Characteristics', 'ExecutableImage, 32BitMachine')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+  }]);
+
+  return BlockReaderFileHeader;
+}(BlockReader_BlockReader);
+
+
+// CONCATENATED MODULE: ./src/libs/ExeFile/dataDirectory.js
+
+
+
+
+
+
+
+
+var dataDirectory_BlockReaderDataDirectory =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderDataDirectory, _BlockReader);
+
+  function BlockReaderDataDirectory() {
+    classCallCheck_default()(this, BlockReaderDataDirectory);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderDataDirectory).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderDataDirectory, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(types_Type.DWord, 'VirtualAddress', ''), this._desc(types_Type.DWord, 'Size', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+  }, {
+    key: "readAll",
+    value: function readAll() {
+      var arr = [];
+
+      for (var i = 0; i < 16; i++) {
+        arr.push(this.read());
+      }
+
+      return arr;
+    }
+  }]);
+
+  return BlockReaderDataDirectory;
+}(BlockReader_BlockReader);
+
+
+// CONCATENATED MODULE: ./src/libs/ExeFile/optionalHeader.js
+
+
+
+
+
+
+
+var optionalHeader_Byte = 1;
+var optionalHeader_Word = 2;
+var optionalHeader_DWord = 4;
+
+var optionalHeader_BlockReaderOptionalHeader =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderOptionalHeader, _BlockReader);
+
+  function BlockReaderOptionalHeader() {
+    classCallCheck_default()(this, BlockReaderOptionalHeader);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderOptionalHeader).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderOptionalHeader, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(optionalHeader_Word, 'Magic', 'PE32 - State of the image file'), this._desc(optionalHeader_Byte, 'MajorLinkerVersion', ''), this._desc(optionalHeader_Byte, 'MinorLinkerVersion', ''), this._desc(optionalHeader_DWord, 'SizeOfCode', 'Size of the code section'), this._desc(optionalHeader_DWord, 'SizeOfInitializedData', 'Size of the initialized data section'), this._desc(optionalHeader_DWord, 'SizeOfUninitializedData', 'Size of the uninitialized data section'), this._desc(optionalHeader_DWord, 'AddressOfEntryPoint', 'Pointer to the entry point function, relative to the image base address, or zero if no entry point is present'), this._desc(optionalHeader_DWord, 'BaseOfCode', 'Pointer to the beginning of the code section, relative to the image base'), this._desc(optionalHeader_DWord, 'BaseOfData', 'Pointer to the beginning of the data section, relative to the image base'), this._desc(optionalHeader_DWord, 'ImageBase', 'Preferred address of the first byte of the image when it is loaded in memory'), this._desc(optionalHeader_DWord, 'SectionAlignment', 'Alignment of the section loaded in memory'), this._desc(optionalHeader_DWord, 'FileAlignment', 'Alignment of the raw data of sections in the image file'), this._desc(optionalHeader_Word, 'MajorOperatingSystemVersion', 'Major version number of the required operating system'), this._desc(optionalHeader_Word, 'MinorOperatingSystemVersion', 'Minor version number of the required operating system'), this._desc(optionalHeader_Word, 'MajorImageVersion', ''), this._desc(optionalHeader_Word, 'MinorImageVersion', ''), this._desc(optionalHeader_Word, 'MajorSubsystemVersion', ''), this._desc(optionalHeader_Word, 'MinorSubsystemVersion', ''), this._desc(optionalHeader_DWord, 'Win32VersionValue', 'Reserved'), this._desc(optionalHeader_DWord, 'SizeOfImage', 'Size of the image including all headers'), this._desc(optionalHeader_DWord, 'SizeOfHeaders', ''), this._desc(optionalHeader_DWord, 'CheckSum', 'Image file checksum'), this._desc(optionalHeader_Word, 'Subsystem', 'WindowsCui - Subsystem required to run this image'), this._desc(optionalHeader_Word, 'DllCharacteristics', 'DynamicBase, NxCompat, TerminalServerAware - DLL characteristics of the image'), this._desc(optionalHeader_DWord, 'SizeOfStackReserve', 'Number of bytes to reserve for the stack'), this._desc(optionalHeader_DWord, 'SizeOfStackCommit', 'Number of bytes to commit for the stack'), this._desc(optionalHeader_DWord, 'SizeOfHeapReserve', 'Number of bytes to reserve for the local heap'), this._desc(optionalHeader_DWord, 'SizeOfHeapCommit', 'Number of bytes to commit for the local heap'), this._desc(optionalHeader_DWord, 'LoaderFlags', 'Obsolete'), this._desc(optionalHeader_DWord, 'NumberOfRvaAndSizes', 'Number of directory entries in the remainder of the optional header')];
+      var struct = this.readStructure(structdef);
+      var map = this.convertStructureToMap(struct);
+      var brDataDirectories = new dataDirectory_BlockReaderDataDirectory();
+      brDataDirectories.setReader(this._reader);
+      map.DataDirectory = brDataDirectories.readAll();
+      return map;
+    }
+  }]);
+
+  return BlockReaderOptionalHeader;
+}(BlockReader_BlockReader);
+
+
+// CONCATENATED MODULE: ./src/libs/ExeFile/ntHeader.js
+
+
+
+
+
+
+
+
+var ntHeader_DWord = 4;
+
+var ntHeader_BlockReaderNTHeader =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderNTHeader, _BlockReader);
+
+  function BlockReaderNTHeader() {
+    classCallCheck_default()(this, BlockReaderNTHeader);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderNTHeader).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderNTHeader, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(ntHeader_DWord, 'Signature', 'PE\\0\\0')];
+      var struct = this.readStructure(structdef);
+      var map = this.convertStructureToMap(struct);
+      var brFileHeader = new fileHeader_BlockReaderFileHeader();
+      brFileHeader.setReader(this._reader);
+      var brOptionalHeader = new optionalHeader_BlockReaderOptionalHeader();
+      brOptionalHeader.setReader(this._reader);
+      map.file = brFileHeader.read();
+      map.optional = brOptionalHeader.read();
+      return map;
+    }
+  }]);
+
+  return BlockReaderNTHeader;
+}(BlockReader_BlockReader);
+
+
+// CONCATENATED MODULE: ./src/libs/ExeFile/sectionHeader.js
+
+
+
+
+
+
+var sectionHeader_Byte = 1;
+var sectionHeader_Word = 2;
+var sectionHeader_DWord = 4;
+
+var sectionHeader_BlockReaderSectionHeader =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderSectionHeader, _BlockReader);
+
+  function BlockReaderSectionHeader() {
+    classCallCheck_default()(this, BlockReaderSectionHeader);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderSectionHeader).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderSectionHeader, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(sectionHeader_Byte * 8, 'Name', ''), this._desc(sectionHeader_DWord, 'VirtualSize', ''), this._desc(sectionHeader_DWord, 'VirtualAddress', ''), this._desc(sectionHeader_DWord, 'SizeOfRawData', ''), this._desc(sectionHeader_DWord, 'PointerToRawData', ''), this._desc(sectionHeader_DWord, 'PointerToRelocations', ''), this._desc(sectionHeader_DWord, 'PointerToLinenumbers', ''), this._desc(sectionHeader_Word, 'NumberOfRelocations', ''), this._desc(sectionHeader_Word, 'NumberOfLinenumbers', ''), this._desc(sectionHeader_DWord, 'Characteristics', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+  }, {
+    key: "readAll",
+    value: function readAll(count) {
+      var arr = [];
+
+      for (var i = 0; i < count; i++) {
+        arr.push(this.read());
+      }
+
+      return arr;
+    }
+  }]);
+
+  return BlockReaderSectionHeader;
+}(BlockReader_BlockReader);
+
+
+// CONCATENATED MODULE: ./src/libs/ExeFile/importDescriptor.js
+
+
+
+
+
+
+var importDescriptor_DWord = 4;
+
+var importDescriptor_BlockReaderImportDescriptor =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderImportDescriptor, _BlockReader);
+
+  function BlockReaderImportDescriptor() {
+    classCallCheck_default()(this, BlockReaderImportDescriptor);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderImportDescriptor).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderImportDescriptor, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(importDescriptor_DWord, 'OriginalFirstThunk', ''), this._desc(importDescriptor_DWord, 'TimeDateStamp', ''), this._desc(importDescriptor_DWord, 'ForwarderChain', ''), this._desc(importDescriptor_DWord, 'Name', ''), this._desc(importDescriptor_DWord, 'FirstThunk', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+  }, {
+    key: "readAll",
+    value: function readAll() {
+      var arr = [];
+
+      for (;;) {
+        var desc = this.read();
+        if (desc.OriginalFirstThunk.num === 0) break;
+        arr.push(desc);
+      }
+
+      return arr;
+    }
+  }]);
+
+  return BlockReaderImportDescriptor;
+}(BlockReader_BlockReader);
+
+
+// CONCATENATED MODULE: ./src/libs/ExeFile/exportDescriptor.js
+
+
+
+
+
+
+
+var exportDescriptor_Word = 2;
+var exportDescriptor_DWord = 4;
+
+var exportDescriptor_BlockReaderExportDescriptor =
+/*#__PURE__*/
+function (_BlockReader) {
+  inherits_default()(BlockReaderExportDescriptor, _BlockReader);
+
+  function BlockReaderExportDescriptor() {
+    classCallCheck_default()(this, BlockReaderExportDescriptor);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(BlockReaderExportDescriptor).apply(this, arguments));
+  }
+
+  createClass_default()(BlockReaderExportDescriptor, [{
+    key: "read",
+    value: function read() {
+      var structdef = [this._desc(types_Type.DWord, 'Characteristics', ''), this._desc(types_Type.DWord, 'TimeDateStamp', ''), this._desc(types_Type.Word, 'MajorVersion', ''), this._desc(types_Type.Word, 'MinorVersion', ''), this._desc(types_Type.DWord, 'Name', ''), this._desc(types_Type.DWord, 'Base', ''), this._desc(types_Type.DWord, 'NumberOfFunctions', ''), this._desc(types_Type.DWord, 'NumberOfNames', ''), this._desc(types_Type.DWord, 'AddressOfFunctions', ''), this._desc(types_Type.DWord, 'AddressOfNames', ''), this._desc(types_Type.DWord, 'AddressOfNameOrdinals', '')];
+      var struct = this.readStructure(structdef);
+      return this.convertStructureToMap(struct);
+    }
+  }, {
+    key: "readAll",
+    value: function readAll() {
+      var arr = [];
+
+      for (;;) {
+        var desc = this.read();
+        if (desc.Name.num === 0) break;
+        arr.push(desc);
+      }
+
+      return arr;
+    }
+  }]);
+
+  return BlockReaderExportDescriptor;
+}(BlockReader_BlockReader);
+
+
 // CONCATENATED MODULE: ./src/main.js
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return main_Pexe; });
 
@@ -2196,8 +2505,13 @@ function () {
 
 
 /*
-  Executable files parser
+  Парсер исполняемых файлов
 */
+
+
+
+
+
 
 
 
@@ -2208,13 +2522,12 @@ function () {
   function Pexe(bytes) {
     classCallCheck_default()(this, Pexe);
 
-    defineProperty_default()(this, "_reader", void 0);
+    defineProperty_default()(this, "breader", void 0);
 
-    this._reader = new FileReader_FileReader();
     if (bytes) this.setFile(bytes);
   }
   /**
-   * Set new file
+   * Устанавливает байты целевого файла
    * @param bytes {Uint8Array}
    */
 
@@ -2222,10 +2535,10 @@ function () {
   createClass_default()(Pexe, [{
     key: "setFile",
     value: function setFile(bytes) {
-      this._reader.setFile(bytes);
+      this.breader = new BlockReader_BlockReader(new FileReader_FileReader(bytes));
     }
     /**
-     * Fetch file from url and set it
+     * Извлекает файл из сети и устанавливает его в качестве целевого
      * @param url
      * @returns {Promise<void>}
      */
@@ -2276,33 +2589,126 @@ function () {
      */
 
     /**
-     * Converts RVA to RAW
-     * @param {number} rva
-     * @param {Array<SectionHeader>} sections
-     * @param {number} alignment
-     * @returns {number | null} raw address or null if incorrect sections
+     * Генерирует функцию конвертации RVA в RAW адреса
+     * @param sections
+     * @param alignment
+     * @returns {Function}
      */
 
   }, {
-    key: "rvaToRaw",
-    value: function rvaToRaw(rva, sections, alignment) {
+    key: "generateRvaToRawFunc",
+    value: function generateRvaToRawFunc(sections, alignment) {
       var alignUp = function alignUp(n, a) {
         return Math.ceil(n / a) * a;
       };
 
-      for (var i = 0; i < sections.length; i++) {
-        var start = sections[i].VirtualAddress.num;
-        var end = start + alignUp(sections[i].VirtualSize.num, alignment);
+      return function (rva) {
+        for (var i = 0; i < sections.length; i++) {
+          var start = sections[i].VirtualAddress.num;
+          var end = start + alignUp(sections[i].VirtualSize.num, alignment);
 
-        if (rva >= start && rva < end) {
-          return rva - sections[i].VirtualAddress.num + sections[i].PointerToRawData.num;
+          if (rva >= start && rva < end) {
+            return rva - sections[i].VirtualAddress.num + sections[i].PointerToRawData.num;
+          }
         }
-      }
 
-      return null;
+        return null;
+      };
     }
     /**
-     * Returns exe file info
+     * Формирует мета-информацию принимая готовую распаршенную информацию
+     * По сути не добавляет никакой новой информации, но приводит в читаемый вид существующую
+     * @param exe {ExeFile}
+     * @returns {Meta}
+     */
+
+  }, {
+    key: "getMeta",
+    value: function getMeta(exe) {
+      var meta = {};
+      meta.isDOS = exe.headers.dos.e_magic.text === 'MZ';
+      meta.isNT = exe.headers.nt.Signature.text === 'PE\0\0';
+
+      if (meta.isNT) {
+        meta.machine = DataDictionary_DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num);
+        meta.magic = DataDictionary_DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num);
+        meta.subsystem = DataDictionary_DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num);
+        meta.chars = DataDictionary_DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num);
+        meta.dllChars = DataDictionary_DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num);
+        meta.sections = DataDictionary_DataDictionary.decodeSectionsName(exe.sections);
+        meta.osVersion = DataDictionary_DataDictionary.decodeOSVersion(exe.headers.nt.optional.MajorOperatingSystemVersion.num, exe.headers.nt.optional.MinorOperatingSystemVersion.num);
+        meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000);
+        meta.isDLL = meta.chars.includes('DLL');
+        meta.is64 = meta.magic === 'PE64'; // isTrunked
+        // isNET
+        // isDebug
+      }
+
+      return meta;
+    }
+    /**
+     * Читает DOS заголовок
+     * @returns {DosHeader}
+     */
+
+  }, {
+    key: "readDOSHeader",
+    value: function readDOSHeader() {
+      var brDOSReader = new dosHeader_BlockReaderDosHeader();
+      brDOSReader.setReader(this.breader.getReader());
+      return brDOSReader.read();
+    }
+    /**
+     * Читает NT заголовок
+     * @returns {NtHeader}
+     */
+
+  }, {
+    key: "readNTHeader",
+    value: function readNTHeader() {
+      var brNTHeader = new ntHeader_BlockReaderNTHeader();
+      brNTHeader.setReader(this.breader.getReader());
+      return brNTHeader.read();
+    }
+    /**
+     * Читает секции
+     * @param count
+     * @returns {Array<SectionHeader>}
+     */
+
+  }, {
+    key: "readSections",
+    value: function readSections(count) {
+      var brSection = new sectionHeader_BlockReaderSectionHeader();
+      brSection.setReader(this.breader.getReader());
+      return brSection.readAll(count);
+    }
+    /**
+     * Читает таблицу импортов
+     * @returns {Array<ImportDescriptor>}
+     */
+
+  }, {
+    key: "readDirImportDescriptors",
+    value: function readDirImportDescriptors() {
+      var brImportDesc = new importDescriptor_BlockReaderImportDescriptor();
+      brImportDesc.setReader(this.breader.getReader());
+      return brImportDesc.readAll();
+    }
+    /**
+     * Читает таблицу экспортов
+     * @returns {Array<ExportDescriptor>}
+     */
+
+  }, {
+    key: "readDirExportDescriptors",
+    value: function readDirExportDescriptors() {
+      var brExportDesc = new exportDescriptor_BlockReaderExportDescriptor();
+      brExportDesc.setReader(this.breader.getReader());
+      return brExportDesc.readAll();
+    }
+    /**
+     * Возвращает информацию по исполняемому файлу
      * @returns {ExeFile}
      */
 
@@ -2310,73 +2716,43 @@ function () {
     key: "parse",
     value: function parse() {
       var file = {
-        bytes: new Uint8Array([]),
+        bytes: this.breader.getFileBytes(),
         meta: {},
         headers: {
           dos: {},
           nt: {}
         },
-        sections: []
+        sections: [],
+        directories: {}
       };
       var exe = file;
-      var breader = new BlockReader_BlockReader(this._reader);
-      exe.bytes = this._reader.bytes; // Read DOS header
+      exe.headers.dos = this.readDOSHeader(); // Если DOS приложение
 
-      if (this._reader.bytes.length >= 64) {
-        exe.headers.dos = breader.setPointer(0).readDOSHeader();
-        if (exe.headers.dos.e_magic.text === 'MZ') exe.meta.isDOS = true;
-      } // Read NT header if lfanew is correct
+      if (exe.headers.dos.e_magic.text === 'MZ') {
+        this.breader.setPointer(exe.headers.dos.e_lfanew.num);
+        exe.headers.nt = this.readNTHeader(); // Если Windows приложение
 
+        if (exe.headers.nt.Signature.text === 'PE\0\0') {
+          exe.sections = this.readSections(exe.headers.nt.file.NumberOfSections.num);
+          var rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num); // Чтение таблицы импорта
 
-      var lfanew = Number(exe.headers.dos.e_lfanew.num);
+          var rawImportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num);
 
-      if (lfanew > 64 && lfanew < exe.bytes.length - 512) {
-        exe.headers.nt = breader.setPointer(lfanew).readNTHeader();
-        if (exe.headers.nt.Signature.text === 'PE\0\0') exe.meta.isNT = true;
-      } // Read sections headers
+          if (rawImportDir) {
+            this.breader.setPointer(rawImportDir);
+            exe.directories["import"] = this.readDirImportDescriptors();
+          }
 
+          var rawExportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[0].VirtualAddress.num);
 
-      if (exe.meta.isNT) {
-        exe.sections = breader.readSections(exe.headers.nt.file.NumberOfSections.num);
-        exe.meta.sections = DataDictionary_DataDictionary.decodeSectionsName(exe.sections);
-      } // Getting import tables
-
-
-      if (exe.meta.isNT) {
-        var alignment = exe.headers.nt.optional.SectionAlignment.num;
-        var sections = exe.sections;
-        var importRva = exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num;
-        var importRaw = this.rvaToRaw(importRva, sections, alignment);
-
-        if (importRaw != null) {
-          breader.setPointer(importRaw);
-
-          for (var i = 0;; i++) {
-            var importDesc = breader.readImportDescriptor();
-            if (importDesc.OriginalFirstThunk === 0) break;
-            var libnameRaw = this.rvaToRaw(importDesc.Name.num, sections, alignment);
-            if (libnameRaw == null) break;
-            breader.savePointer();
-            var libname = breader.setPointer(libnameRaw).readString();
-            breader.restorePointer();
-            console.log(libname);
+          if (rawExportDir) {
+            this.breader.setPointer(rawExportDir);
+            exe.directories["export"] = this.readDirExportDescriptors();
           }
         }
-      } // Decode user-friendly information
-
-
-      if (exe.meta.isNT) {
-        exe.meta.machine = DataDictionary_DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num);
-        exe.meta.magic = DataDictionary_DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num);
-        exe.meta.osVersion = DataDictionary_DataDictionary.decodeOSVersion(exe.headers.nt.optional.MajorOperatingSystemVersion.num, exe.headers.nt.optional.MinorOperatingSystemVersion.num);
-        exe.meta.subsystem = DataDictionary_DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num);
-        exe.meta.chars = DataDictionary_DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num);
-        exe.meta.dllChars = DataDictionary_DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num);
-        exe.meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000);
-        exe.meta.isDLL = exe.meta.chars.includes('DLL');
-        exe.meta.is64 = exe.meta.magic === 'PE64';
       }
 
+      exe.meta = this.getMeta(exe);
       return exe;
     }
   }]);

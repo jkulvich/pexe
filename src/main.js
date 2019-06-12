@@ -1,6 +1,6 @@
 // @flow
 /*
-  Executable files parser
+  Парсер исполняемых файлов
 */
 
 import FileReader from './libs/FileReader'
@@ -9,25 +9,34 @@ import DataDictionary from './libs/DataDictionary'
 
 import type { ExeFile } from './libs/ExeFile/struct'
 import type { SectionHeader } from './libs/ExeFile/sectionHeader'
+import type { Meta } from './libs/ExeFile/meta'
+import BlockReaderDosHeader from './libs/ExeFile/dosHeader'
+import BlockReaderNTHeader from './libs/ExeFile/ntHeader'
+import type { DosHeader } from './libs/ExeFile/dosHeader'
+import type { NtHeader } from './libs/ExeFile/ntHeader'
+import BlockReaderSectionHeader from './libs/ExeFile/sectionHeader'
+import type { ImportDescriptor } from './libs/ExeFile/importDescriptor'
+import BlockReaderImportDescriptor from './libs/ExeFile/importDescriptor'
+import type { ExportDescriptor } from './libs/ExeFile/exportDescriptor'
+import BlockReaderExportDescriptor from './libs/ExeFile/exportDescriptor'
 
 export default class Pexe {
-  _reader: FileReader
+  breader: BlockReader
 
   constructor (bytes?: Uint8Array) {
-    this._reader = new FileReader()
     if (bytes) this.setFile(bytes)
   }
 
   /**
-   * Set new file
+   * Устанавливает байты целевого файла
    * @param bytes {Uint8Array}
    */
   setFile (bytes: Uint8Array) {
-    this._reader.setFile(bytes)
+    this.breader = new BlockReader(new FileReader(bytes))
   }
 
   /**
-   * Fetch file from url and set it
+   * Извлекает файл из сети и устанавливает его в качестве целевого
    * @param url
    * @returns {Promise<void>}
    */
@@ -47,103 +56,160 @@ export default class Pexe {
    */
 
   /**
-   * Converts RVA to RAW
-   * @param {number} rva
-   * @param {Array<SectionHeader>} sections
-   * @param {number} alignment
-   * @returns {number | null} raw address or null if incorrect sections
+   * Генерирует функцию конвертации RVA в RAW адреса
+   * @param sections
+   * @param alignment
+   * @returns {Function}
    */
-  rvaToRaw (rva: number, sections: Array<SectionHeader>, alignment: number): number | null {
+  generateRvaToRawFunc (sections: Array<SectionHeader>, alignment: number): (rva: number) => number | null {
     let alignUp = (n, a) => Math.ceil(n / a) * a
-    for (let i = 0; i < sections.length; i++) {
-      let start = sections[i].VirtualAddress.num
-      let end = start + alignUp(sections[i].VirtualSize.num, alignment)
-      if (rva >= start && rva < end) {
-        return rva - sections[i].VirtualAddress.num + sections[i].PointerToRawData.num
+    return (rva: number): number | null => {
+      for (let i = 0; i < sections.length; i++) {
+        let start = sections[i].VirtualAddress.num
+        let end = start + alignUp(sections[i].VirtualSize.num, alignment)
+        if (rva >= start && rva < end) {
+          return rva - sections[i].VirtualAddress.num + sections[i].PointerToRawData.num
+        }
       }
+      return null
     }
-    return null
   }
 
   /**
-   * Returns exe file info
+   * Формирует мета-информацию принимая готовую распаршенную информацию
+   * По сути не добавляет никакой новой информации, но приводит в читаемый вид существующую
+   * @param exe {ExeFile}
+   * @returns {Meta}
+   */
+  getMeta (exe: ExeFile): Meta {
+    let meta: Meta = {}
+    meta.isDOS = exe.headers.dos.e_magic.text === 'MZ'
+    meta.isNT = exe.headers.nt.Signature.text === 'PE\0\0'
+
+    if (meta.isNT) {
+      meta.machine = DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num)
+      meta.magic = DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num)
+      meta.subsystem = DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num)
+      meta.chars = DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num)
+      meta.dllChars = DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num)
+      meta.sections = DataDictionary.decodeSectionsName(exe.sections)
+
+      meta.osVersion = DataDictionary.decodeOSVersion(
+        exe.headers.nt.optional.MajorOperatingSystemVersion.num,
+        exe.headers.nt.optional.MinorOperatingSystemVersion.num
+      )
+
+      meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000)
+
+      meta.isDLL = meta.chars.includes('DLL')
+      meta.is64 = meta.magic === 'PE64'
+
+      // isTrunked
+      // isNET
+      // isDebug
+    }
+    return meta
+  }
+
+  /**
+   * Читает DOS заголовок
+   * @returns {DosHeader}
+   */
+  readDOSHeader (): DosHeader {
+    let brDOSReader = new BlockReaderDosHeader()
+    brDOSReader.setReader(this.breader.getReader())
+    return brDOSReader.read()
+  }
+
+  /**
+   * Читает NT заголовок
+   * @returns {NtHeader}
+   */
+  readNTHeader (): NtHeader {
+    let brNTHeader = new BlockReaderNTHeader()
+    brNTHeader.setReader(this.breader.getReader())
+    return brNTHeader.read()
+  }
+
+  /**
+   * Читает секции
+   * @param count
+   * @returns {Array<SectionHeader>}
+   */
+  readSections (count: number): Array<SectionHeader> {
+    let brSection = new BlockReaderSectionHeader()
+    brSection.setReader(this.breader.getReader())
+    return brSection.readAll(count)
+  }
+
+  /**
+   * Читает таблицу импортов
+   * @returns {Array<ImportDescriptor>}
+   */
+  readDirImportDescriptors (): Array<ImportDescriptor> {
+    let brImportDesc = new BlockReaderImportDescriptor()
+    brImportDesc.setReader(this.breader.getReader())
+    return brImportDesc.readAll()
+  }
+
+  /**
+   * Читает таблицу экспортов
+   * @returns {Array<ExportDescriptor>}
+   */
+  readDirExportDescriptors (): Array<ExportDescriptor> {
+    let brExportDesc = new BlockReaderExportDescriptor()
+    brExportDesc.setReader(this.breader.getReader())
+    return brExportDesc.readAll()
+  }
+
+  /**
+   * Возвращает информацию по исполняемому файлу
    * @returns {ExeFile}
    */
   parse (): ExeFile {
     let file: Object = {
-      bytes: new Uint8Array([]),
+      bytes: this.breader.getFileBytes(),
       meta: {},
       headers: {
         dos: {},
         nt: {}
       },
-      sections: []
+      sections: [],
+      directories: {},
     }
     let exe: ExeFile = file
 
-    let breader = new BlockReader(this._reader)
-    exe.bytes = this._reader.bytes
+    exe.headers.dos = this.readDOSHeader()
 
-    // Read DOS header
-    if (this._reader.bytes.length >= 64) {
-      exe.headers.dos = breader.setPointer(0).readDOSHeader()
-      if (exe.headers.dos.e_magic.text === 'MZ') exe.meta.isDOS = true
-    }
+    // Если DOS приложение
+    if (exe.headers.dos.e_magic.text === 'MZ') {
+      this.breader.setPointer(exe.headers.dos.e_lfanew.num)
+      exe.headers.nt = this.readNTHeader()
 
-    // Read NT header if lfanew is correct
-    let lfanew = Number(exe.headers.dos.e_lfanew.num)
-    if (lfanew > 64 && lfanew < exe.bytes.length - 512) {
-      exe.headers.nt = breader.setPointer(lfanew).readNTHeader()
-      if (exe.headers.nt.Signature.text === 'PE\0\0') exe.meta.isNT = true
-    }
+      // Если Windows приложение
+      if (exe.headers.nt.Signature.text === 'PE\0\0') {
+        exe.sections = this.readSections(exe.headers.nt.file.NumberOfSections.num)
 
-    // Read sections headers
-    if (exe.meta.isNT) {
-      exe.sections = breader.readSections(exe.headers.nt.file.NumberOfSections.num)
-      exe.meta.sections = DataDictionary.decodeSectionsName(exe.sections)
-    }
+        let rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num)
 
-    // Getting import tables
-    if (exe.meta.isNT) {
-      let alignment = exe.headers.nt.optional.SectionAlignment.num
-      let sections = exe.sections
-
-      let importRva = exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num
-      let importRaw = this.rvaToRaw(importRva, sections, alignment)
-
-      if (importRaw != null) {
-        breader.setPointer(importRaw)
-        for (let i = 0;; i++) {
-          let importDesc = breader.readImportDescriptor()
-          if (importDesc.OriginalFirstThunk === 0) break
-
-          // Достаём имена библиотек
-          let libnameRaw = this.rvaToRaw(importDesc.Name.num, sections, alignment)
-          if (libnameRaw == null) break //TODO: Такой ситуации не должно быть в рабочем exe'шнике
-          breader.savePointer()
-          let libname = breader.setPointer(libnameRaw).readString()
-          breader.restorePointer()
-          console.log(libname)
-
+        // Чтение таблицы импорта
+        let rawImportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num)
+        if (rawImportDir) {
+          this.breader.setPointer(rawImportDir)
+          exe.directories.import = this.readDirImportDescriptors()
         }
+
+        let rawExportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[0].VirtualAddress.num)
+        if (rawExportDir) {
+          this.breader.setPointer(rawExportDir)
+          exe.directories.export = this.readDirExportDescriptors()
+        }
+
       }
+
     }
 
-    // Decode user-friendly information
-    if (exe.meta.isNT) {
-      exe.meta.machine = DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num)
-      exe.meta.magic = DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num)
-      exe.meta.osVersion = DataDictionary.decodeOSVersion(
-        exe.headers.nt.optional.MajorOperatingSystemVersion.num,
-        exe.headers.nt.optional.MinorOperatingSystemVersion.num
-      )
-      exe.meta.subsystem = DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num)
-      exe.meta.chars = DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num)
-      exe.meta.dllChars = DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num)
-      exe.meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000)
-      exe.meta.isDLL = exe.meta.chars.includes('DLL')
-      exe.meta.is64 = exe.meta.magic === 'PE64'
-    }
+    exe.meta = this.getMeta(exe)
 
     return exe
   }

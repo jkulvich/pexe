@@ -1,0 +1,4 @@
+node_modules
+*.exe
+yarn-error.log
+.idea/

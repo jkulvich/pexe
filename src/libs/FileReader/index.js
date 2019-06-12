@@ -5,6 +5,7 @@ Reads file by byte per byte
 
 import * as Errors from './errors'
 import Bytes from '../Bytes'
+import { Type } from '../types'
 
 /** Information block scheme */
 export type DataBlock = {
@@ -61,11 +62,14 @@ export default class FileReader {
     let offset = this.pointer
     let block = this.readArray(count)
     let types: { [number]: string } = {}
-    types[1] = 'Byte'
-    types[2] = 'Word'
-    types[4] = 'DWord'
-    types[8] = 'QWord'
-    types[16] = 'YWord'
+    types[Type.Byte] = 'Byte'
+    types[Type.Word] = 'Word'
+    types[Type.DWord] = 'DWord'
+    types[Type.QWord] = 'QWord'
+    types[Type.TWord] = 'TWord'
+    types[Type.OWord] = 'OWord'
+    types[Type.YWord] = 'YWord'
+    types[Type.ZWord] = 'ZWord'
     return {
       size: count,
       name,
