@@ -16,6 +16,7 @@ import type { SectionHeader } from '../ExeFile/sectionHeader'
 import type { ExportDescriptor } from '../ExeFile/exportDescriptor'
 import type { ImportDescriptor } from '../ExeFile/importDescriptor'
 import { BlockReaderError } from './errors'
+import { Type } from '../types'
 
 const Byte = 1
 const Word = 2
@@ -95,6 +96,11 @@ export default class BlockReader {
       name.push(char)
     }
     return String.fromCharCode(...name)
+  }
+
+  /** Читает один тип в блок */
+  readType (type: number): DataBlock {
+    return this._reader.readBlock(type)
   }
 
   /**

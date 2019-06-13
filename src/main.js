@@ -19,6 +19,11 @@ import type { ImportDescriptor } from './libs/ExeFile/importDescriptor'
 import BlockReaderImportDescriptor from './libs/ExeFile/importDescriptor'
 import type { ExportDescriptor } from './libs/ExeFile/exportDescriptor'
 import BlockReaderExportDescriptor from './libs/ExeFile/exportDescriptor'
+import { Type } from './libs/types'
+import type { DataBlock } from './libs/FileReader'
+import type { ImportData } from './libs/ExeFile/importData'
+import { RvaToRawNullError } from './errors'
+import type { SectionData } from './libs/ExeFile/sectionData'
 
 export default class Pexe {
   breader: BlockReader
@@ -72,6 +77,8 @@ export default class Pexe {
         }
       }
       return null
+      //throw new RvaToRawNullError(`RVA: ${rva}`)
+      //return 0
     }
   }
 
@@ -87,28 +94,118 @@ export default class Pexe {
     meta.isNT = exe.headers.nt.Signature.text === 'PE\0\0'
 
     if (meta.isNT) {
+      meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000)
+
       meta.machine = DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num)
       meta.magic = DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num)
       meta.subsystem = DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num)
       meta.chars = DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num)
       meta.dllChars = DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num)
-      meta.sections = DataDictionary.decodeSectionsName(exe.sections)
-
       meta.osVersion = DataDictionary.decodeOSVersion(
         exe.headers.nt.optional.MajorOperatingSystemVersion.num,
         exe.headers.nt.optional.MinorOperatingSystemVersion.num
       )
 
-      meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000)
+      // Дружелюбное представление секций
+      meta.sections = this.parseSections(exe)
 
+      // Парсинг директорий
+      meta.imports = this.parseImports(exe)
+
+      // Флаги
       meta.isDLL = meta.chars.includes('DLL')
       meta.is64 = meta.magic === 'PE64'
+      meta.isStripped = meta.chars.findIndex(c => c.toLowerCase().indexOf('stripped') >= 0) >= 0
+      // Дополнительно детектить по директории IMAGE_DIRECTORY_ENTRY_DEBUG
+      meta.isDebug = meta.sections.findIndex(s => s.name.toLowerCase().indexOf('debug') >= 0) >= 0
+      // .cormeta если присутствует секция - ПО содержит managed код тоже
+      meta.isNET = meta.imports.findIndex(imp => imp.name === 'mscoree.dll') >= 0
+      // isPacked
 
-      // isTrunked
-      // isNET
-      // isDebug
     }
     return meta
+  }
+
+  /**
+   * Приводит к читабельному виду информацию по импорту
+   * @param exe
+   * @returns {Array}
+   */
+  parseImports (exe: ExeFile): Array<ImportData> {
+    let rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num)
+    let imports = []
+
+    for (let importDesk of exe.directories.import) {
+      let data: ImportData = {}
+
+      let nameOffset = rvaToRaw(importDesk.Name.num)
+      if (nameOffset != null) {
+        this.breader.setPointer(nameOffset)
+        data.name = this.breader.readString()
+        data.isBound = importDesk.TimeDateStamp.num !== 0
+        data.funcs = []
+
+        // Если импорт стандартный
+        if (!data.isBound) {
+          let addressTable = rvaToRaw(importDesk.FirstThunk.num)
+          let lookupTableRaw = importDesk.OriginalFirstThunk.num === 0
+            ? rvaToRaw(importDesk.OriginalFirstThunk.num)
+            : addressTable
+
+          // raw(56364) Offset for first element and start of import table
+          // rva(66608) raw(56880) OriginalFirstThunk of dll1.dll for msvcrt.dll
+          // rva(66802) raw(57074)
+
+          // Идём по таблице ссылающейся на номера и имена функций
+          if (lookupTableRaw !== null) {
+            for (let lookup = lookupTableRaw; ; lookup += Type.DWord) {
+              this.breader.setPointer(lookup)
+              let structNameRva = this.breader.readType(Type.DWord).num
+
+              // Выходим если достигли конца таблицы
+              if (structNameRva === 0) break
+
+              // Читаем номер и имя функции
+              let structNameRaw = rvaToRaw(structNameRva)
+              if (structNameRaw !== null) {
+                this.breader.setPointer(structNameRaw)
+                let num = this.breader.readType(Type.Word).num
+                let name = this.breader.readString()
+
+                data.funcs.push({ num, name })
+              } else console.error(`WTF? structNameRaw is NULL: RVA: ${structNameRva}, lookupTableRaw: ${lookupTableRaw}`)
+            }
+          }
+
+        }
+        // TODO: bound import
+      }
+
+      imports.push(data)
+    }
+
+    return imports
+  }
+
+  /**
+   * Подготавливает инфомрацию о секциях в более дрежелюбном виде
+   * @param exe
+   * @returns {Array}
+   */
+  parseSections (exe: ExeFile): Array<SectionData> {
+    let rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num)
+
+    let sections = []
+    for (let section of exe.sections) {
+      this.breader.setPointer(section.Name.offset)
+      let name = this.breader.readString()
+
+      let offset = section.PointerToRawData.num
+      let size = section.SizeOfRawData.num
+
+      sections.push({ name, offset, size })
+    }
+    return sections
   }
 
   /**
@@ -191,6 +288,7 @@ export default class Pexe {
         exe.sections = this.readSections(exe.headers.nt.file.NumberOfSections.num)
 
         let rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num)
+        window.rvaToRaw = rvaToRaw
 
         // Чтение таблицы импорта
         let rawImportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num)
@@ -199,6 +297,7 @@ export default class Pexe {
           exe.directories.import = this.readDirImportDescriptors()
         }
 
+        // Чтение таблицы экспорта
         let rawExportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[0].VirtualAddress.num)
         if (rawExportDir) {
           this.breader.setPointer(rawExportDir)
@@ -209,6 +308,7 @@ export default class Pexe {
 
     }
 
+    // Анализ данных и формирование более удобного представления
     exe.meta = this.getMeta(exe)
 
     return exe

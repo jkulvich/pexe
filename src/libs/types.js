@@ -1,3 +1,5 @@
+// @flow
+
 export class Type {
   static get Byte() { // 1
     return 1

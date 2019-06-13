@@ -1,4 +1,9 @@
 node_modules
 *.exe
+*.dll
+*.msi
+*.lib
+*.bin
+*.dos
 yarn-error.log
 .idea/

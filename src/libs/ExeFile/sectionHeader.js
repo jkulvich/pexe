@@ -21,7 +21,7 @@ export type SectionHeader = {
 export default class BlockReaderSectionHeader extends BlockReader {
   read (): SectionHeader {
     let structdef: Array<DataBlockDesk> = [
-      this._desc(Type.Array(Type.Byte * 8), 'Name', ''),
+      this._desc(Type.Array(Type.Byte, 8), 'Name', ''),
       this._desc(Type.DWord, 'VirtualSize', ''),
       this._desc(Type.DWord, 'VirtualAddress', ''),
       this._desc(Type.DWord, 'SizeOfRawData', ''),
@@ -38,7 +38,9 @@ export default class BlockReaderSectionHeader extends BlockReader {
 
   readAll (count: number): Array<SectionHeader> {
     let arr = []
-    for (let i = 0; i < count; i++) arr.push(this.read())
+    for (let i = 0; i < count; i++) {
+      arr.push(this.read())
+    }
     return arr
   }
 }

@@ -4,7 +4,6 @@ import type { DataBlock } from '../FileReader'
 import BlockReader from '../BlockReader'
 
 import type { DataBlockDesk } from '../BlockReader'
-import type { DosHeader } from './dosHeader'
 import { Type } from '../types'
 
 export type FileHeader = {
