@@ -2728,23 +2728,26 @@ function () {
         meta.subsystem = DataDictionary_DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num);
         meta.chars = DataDictionary_DataDictionary.decodeChars(exe.headers.nt.file.Characteristics.num);
         meta.dllChars = DataDictionary_DataDictionary.decodeDllChars(exe.headers.nt.optional.DllCharacteristics.num);
-        meta.osVersion = DataDictionary_DataDictionary.decodeOSVersion(exe.headers.nt.optional.MajorOperatingSystemVersion.num, exe.headers.nt.optional.MinorOperatingSystemVersion.num);
-        meta.sections = this.parseSections(exe);
+        meta.osVersion = DataDictionary_DataDictionary.decodeOSVersion(exe.headers.nt.optional.MajorOperatingSystemVersion.num, exe.headers.nt.optional.MinorOperatingSystemVersion.num); // Дружелюбное представление секций
+
+        meta.sections = this.parseSections(exe); // Парсинг директорий
+
+        meta.imports = this.parseImports(exe);
+        meta.exports = this.parseExports(exe); // Флаги
+
         meta.isDLL = meta.chars.includes('DLL');
         meta.is64 = meta.magic === 'PE64';
         meta.isStripped = meta.chars.findIndex(function (c) {
           return c.toLowerCase().indexOf('stripped') >= 0;
-        }) >= 0;
+        }) >= 0; // Дополнительно детектить по директории IMAGE_DIRECTORY_ENTRY_DEBUG
+
         meta.isDebug = meta.sections.findIndex(function (s) {
           return s.name.toLowerCase().indexOf('debug') >= 0;
-        }) >= 0; // isDebug // https://docs.microsoft.com/en-us/windows/desktop/debug/pe-format#delay-import-address-table
-        // isPacked
-
-        meta.imports = this.parseImports(exe); // .cormeta если присутствует секция - ПО содержит managed код
+        }) >= 0; // .cormeta если присутствует секция - ПО содержит managed код тоже
 
         meta.isNET = meta.imports.findIndex(function (imp) {
           return imp.name === 'mscoree.dll';
-        }) >= 0;
+        }) >= 0; // isPacked
       }
 
       return meta;
@@ -2826,33 +2829,47 @@ function () {
 
       return imports;
     }
-    /**
-     * Подготавливает инфомрацию о секциях в более дрежелюбном виде
-     * @param exe
-     * @returns {Array}
-     */
-
   }, {
-    key: "parseSections",
-    value: function parseSections(exe) {
+    key: "parseExports",
+    value: function parseExports(exe) {
       var rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num);
-      var sections = [];
+      var imports = [];
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = exe.sections[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var section = _step2.value;
-          this.breader.setPointer(section.Name.offset);
-          var name = this.breader.readString();
-          var offset = section.PointerToRawData.num;
-          var size = section.SizeOfRawData.num;
-          sections.push({
-            name: name,
-            offset: offset,
-            size: size
-          });
+        for (var _iterator2 = exe.directories["export"][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var exportDesk = _step2.value;
+          var data = {};
+          var nameRaw = rvaToRaw(exportDesk.Name.num);
+
+          if (nameRaw !== null) {
+            this.breader.setPointer(nameRaw);
+            var name = this.breader.readString();
+            data.name = name;
+            var addressFuncNamesRaw = rvaToRaw(exportDesk.AddressOfNames.num);
+
+            if (addressFuncNamesRaw !== null) {
+              var funcs = [];
+
+              for (var fnameRaw = addressFuncNamesRaw;; fnameRaw += types_Type.DWord) {
+                this.breader.setPointer(fnameRaw);
+                var nameFuncRva = this.breader.readType(types_Type.DWord).num;
+                if (nameFuncRva === 0) break;
+                var nameFuncRaw = rvaToRaw(nameFuncRva);
+
+                if (nameFuncRaw !== null) {
+                  this.breader.setPointer(nameFuncRaw);
+                  var nameFunc = this.breader.readString();
+                  funcs.push(nameFunc);
+                }
+              }
+
+              data.funcs = funcs;
+              imports.push(data);
+            }
+          }
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -2865,6 +2882,51 @@ function () {
         } finally {
           if (_didIteratorError2) {
             throw _iteratorError2;
+          }
+        }
+      }
+
+      return imports;
+    }
+    /**
+     * Подготавливает инфомрацию о секциях в более дрежелюбном виде
+     * @param exe
+     * @returns {Array}
+     */
+
+  }, {
+    key: "parseSections",
+    value: function parseSections(exe) {
+      var rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num);
+      var sections = [];
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = exe.sections[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var section = _step3.value;
+          this.breader.setPointer(section.Name.offset);
+          var name = this.breader.readString();
+          var offset = section.PointerToRawData.num;
+          var size = section.SizeOfRawData.num;
+          sections.push({
+            name: name,
+            offset: offset,
+            size: size
+          });
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+            _iterator3["return"]();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
@@ -2962,6 +3024,7 @@ function () {
           var rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num);
           window.rvaToRaw = rvaToRaw; // Чтение таблицы импорта
 
+          exe.directories["import"] = [];
           var rawImportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num);
 
           if (rawImportDir) {
@@ -2970,6 +3033,7 @@ function () {
           } // Чтение таблицы экспорта
 
 
+          exe.directories["export"] = [];
           var rawExportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[0].VirtualAddress.num);
 
           if (rawExportDir) {

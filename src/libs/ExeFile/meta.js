@@ -2,6 +2,7 @@
 
 import type { ImportData } from './importData'
 import type { SectionData } from './sectionData'
+import type { ExportData } from './exportData'
 
 export type Meta = {
   isDOS: boolean,
@@ -20,4 +21,5 @@ export type Meta = {
   dllChars: Array<string>,
   sections: Array<SectionData>,
   imports: Array<ImportData>,
+  exports: Array<ExportData>,
 }

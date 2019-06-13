@@ -24,6 +24,7 @@ import type { DataBlock } from './libs/FileReader'
 import type { ImportData } from './libs/ExeFile/importData'
 import { RvaToRawNullError } from './errors'
 import type { SectionData } from './libs/ExeFile/sectionData'
+import type { ExportData } from './libs/ExeFile/exportData'
 
 export default class Pexe {
   breader: BlockReader
@@ -111,6 +112,7 @@ export default class Pexe {
 
       // Парсинг директорий
       meta.imports = this.parseImports(exe)
+      meta.exports = this.parseExports(exe)
 
       // Флаги
       meta.isDLL = meta.chars.includes('DLL')
@@ -182,6 +184,46 @@ export default class Pexe {
       }
 
       imports.push(data)
+    }
+
+    return imports
+  }
+
+  parseExports (exe: ExeFile): Array<ExportData> {
+    let rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num)
+    let imports = []
+
+    for (let exportDesk of exe.directories.export) {
+      let data: ExportData = {}
+      let nameRaw = rvaToRaw(exportDesk.Name.num)
+      if (nameRaw !== null) {
+        this.breader.setPointer(nameRaw)
+        let name = this.breader.readString()
+        data.name = name
+
+        let addressFuncNamesRaw = rvaToRaw(exportDesk.AddressOfNames.num)
+        if (addressFuncNamesRaw !== null) {
+          let funcs = []
+
+          for (let fnameRaw = addressFuncNamesRaw; ; fnameRaw += Type.DWord) {
+            this.breader.setPointer(fnameRaw)
+            let nameFuncRva = this.breader.readType(Type.DWord).num
+            if (nameFuncRva === 0) break // TODO: ПРотестить ещё на либах, лишний метод в конце
+
+            let nameFuncRaw = rvaToRaw(nameFuncRva)
+            if (nameFuncRaw !== null) {
+              this.breader.setPointer(nameFuncRaw)
+
+              let nameFunc = this.breader.readString()
+
+              funcs.push(nameFunc)
+            }
+          }
+
+          data.funcs = funcs
+          imports.push(data)
+        }
+      }
     }
 
     return imports
@@ -291,6 +333,7 @@ export default class Pexe {
         window.rvaToRaw = rvaToRaw
 
         // Чтение таблицы импорта
+        exe.directories.import = []
         let rawImportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[1].VirtualAddress.num)
         if (rawImportDir) {
           this.breader.setPointer(rawImportDir)
@@ -298,6 +341,7 @@ export default class Pexe {
         }
 
         // Чтение таблицы экспорта
+        exe.directories.export = []
         let rawExportDir = rvaToRaw(exe.headers.nt.optional.DataDirectory[0].VirtualAddress.num)
         if (rawExportDir) {
           this.breader.setPointer(rawExportDir)
