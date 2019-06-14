@@ -216,9 +216,9 @@ var getPrototypeOf = __webpack_require__(2);
 
 var setPrototypeOf = __webpack_require__(10);
 
-var isNativeFunction = __webpack_require__(14);
+var isNativeFunction = __webpack_require__(17);
 
-var construct = __webpack_require__(15);
+var construct = __webpack_require__(18);
 
 function _wrapNativeSuper(Class) {
   var _cache = typeof Map === "function" ? new Map() : undefined;
@@ -282,11 +282,11 @@ module.exports = _typeof;
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var arrayWithoutHoles = __webpack_require__(16);
+var arrayWithoutHoles = __webpack_require__(13);
 
-var iterableToArray = __webpack_require__(17);
+var iterableToArray = __webpack_require__(14);
 
-var nonIterableSpread = __webpack_require__(18);
+var nonIterableSpread = __webpack_require__(15);
 
 function _toConsumableArray(arr) {
   return arrayWithoutHoles(arr) || iterableToArray(arr) || nonIterableSpread();
@@ -313,7 +313,7 @@ module.exports = _setPrototypeOf;
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(13);
+module.exports = __webpack_require__(16);
 
 
 /***/ }),
@@ -360,6 +360,42 @@ module.exports = _asyncToGenerator;
 
 /***/ }),
 /* 13 */
+/***/ (function(module, exports) {
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+}
+
+module.exports = _arrayWithoutHoles;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports) {
+
+function _iterableToArray(iter) {
+  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+}
+
+module.exports = _iterableToArray;
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports) {
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance");
+}
+
+module.exports = _nonIterableSpread;
+
+/***/ }),
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1091,7 +1127,7 @@ try {
 
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports) {
 
 function _isNativeFunction(fn) {
@@ -1101,7 +1137,7 @@ function _isNativeFunction(fn) {
 module.exports = _isNativeFunction;
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var setPrototypeOf = __webpack_require__(10);
@@ -1139,47 +1175,15 @@ function _construct(Parent, args, Class) {
 module.exports = _construct;
 
 /***/ }),
-/* 16 */
-/***/ (function(module, exports) {
-
-function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
-      arr2[i] = arr[i];
-    }
-
-    return arr2;
-  }
-}
-
-module.exports = _arrayWithoutHoles;
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports) {
-
-function _iterableToArray(iter) {
-  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
-}
-
-module.exports = _iterableToArray;
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports) {
-
-function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance");
-}
-
-module.exports = _nonIterableSpread;
-
-/***/ }),
 /* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/toConsumableArray.js
+var toConsumableArray = __webpack_require__(9);
+var toConsumableArray_default = /*#__PURE__*/__webpack_require__.n(toConsumableArray);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
 var regenerator = __webpack_require__(11);
@@ -1283,10 +1287,6 @@ function (_FileReaderError) {
 
   return FileReaderEOFError;
 }(errors_FileReaderError);
-// EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/toConsumableArray.js
-var toConsumableArray = __webpack_require__(9);
-var toConsumableArray_default = /*#__PURE__*/__webpack_require__.n(toConsumableArray);
-
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/typeof.js
 var helpers_typeof = __webpack_require__(8);
 var typeof_default = /*#__PURE__*/__webpack_require__.n(helpers_typeof);
@@ -2629,10 +2629,7 @@ function (_PexeError2) {
 
   return PexeIncorrectOrdinalError;
 }(errors_PexeError);
-// CONCATENATED MODULE: ./src/main.js
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return main_Pexe; });
-
-
+// CONCATENATED MODULE: ./src/parser.js
 
 
 
@@ -2651,11 +2648,11 @@ function (_PexeError2) {
 
 
 
-var main_Pexe =
+var parser_PexeParser =
 /*#__PURE__*/
 function () {
-  function Pexe(bytes) {
-    classCallCheck_default()(this, Pexe);
+  function PexeParser(bytes) {
+    classCallCheck_default()(this, PexeParser);
 
     defineProperty_default()(this, "breader", void 0);
 
@@ -2667,54 +2664,11 @@ function () {
    */
 
 
-  createClass_default()(Pexe, [{
+  createClass_default()(PexeParser, [{
     key: "setFile",
     value: function setFile(bytes) {
       this.breader = new BlockReader_BlockReader(new FileReader_FileReader(bytes));
     }
-    /**
-     * Извлекает файл из сети и устанавливает его в качестве целевого
-     * @param url
-     * @returns {Promise<void>}
-     */
-
-  }, {
-    key: "fetchFile",
-    value: function () {
-      var _fetchFile = asyncToGenerator_default()(
-      /*#__PURE__*/
-      regenerator_default.a.mark(function _callee(url) {
-        var resp, buff;
-        return regenerator_default.a.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                _context.next = 2;
-                return window.fetch(url);
-
-              case 2:
-                resp = _context.sent;
-                _context.next = 5;
-                return resp.arrayBuffer();
-
-              case 5:
-                buff = _context.sent;
-                this.setFile(new Uint8Array(buff));
-
-              case 7:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
-
-      function fetchFile(_x) {
-        return _fetchFile.apply(this, arguments);
-      }
-
-      return fetchFile;
-    }()
     /*
     RAW (file offset) = RVA - sectionRVA + rawSection // Смещение относительно начала файла
     RVA (Relative Virtual Address) =  // Адрес относительно того, куда была выгружена программа
@@ -2762,6 +2716,7 @@ function () {
     key: "getMeta",
     value: function getMeta(exe) {
       var meta = {};
+      meta.plugins = {};
       meta.isDOS = exe.headers.dos.e_magic.text === 'MZ';
       meta.isNT = exe.headers.nt.Signature.text === 'PE\0\0';
 
@@ -3134,14 +3089,332 @@ function () {
     }
   }]);
 
-  return Pexe;
+  return PexeParser;
 }();
 /*
 - Если это dll то должно совпадать время создания файла и время сборки методов в таблице экспорта (хотя это не всегда)
 - Если dll экспортирует методы под более чем 1 именем
 - Если dll экспортирует методы под не совпадающим со своим именем
+
+- Если секция содержащая характеристику IMAGE_SCN_CNT_CODE называется не .text или секций с этой характеристикой несколько
  */
 
+
+
+// CONCATENATED MODULE: ./src/plugins/BasePlugin/errors/BasePlugin.js
+
+
+
+
+
+
+
+
+/** Базовая ошибка плагинов */
+var BasePlugin_BasePluginError =
+/*#__PURE__*/
+function (_Error) {
+  inherits_default()(BasePluginError, _Error);
+
+  function BasePluginError() {
+    var _getPrototypeOf2;
+
+    var _this;
+
+    classCallCheck_default()(this, BasePluginError);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(BasePluginError)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
+    defineProperty_default()(assertThisInitialized_default()(_this), "name", 'BasePluginError');
+
+    return _this;
+  }
+
+  return BasePluginError;
+}(wrapNativeSuper_default()(Error));
+
+
+// CONCATENATED MODULE: ./src/plugins/BasePlugin/errors/PluginInfoNotImplemented.js
+
+
+
+
+
+
+
+/** Если был вызван не переопределённый метод получения информации о плагине */
+
+var PluginInfoNotImplemented_PluginInfoNotImplementedError =
+/*#__PURE__*/
+function (_BasePluginError) {
+  inherits_default()(PluginInfoNotImplementedError, _BasePluginError);
+
+  function PluginInfoNotImplementedError() {
+    var _getPrototypeOf2;
+
+    var _this;
+
+    classCallCheck_default()(this, PluginInfoNotImplementedError);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(PluginInfoNotImplementedError)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
+    defineProperty_default()(assertThisInitialized_default()(_this), "name", 'PluginInfoNotImplementedError');
+
+    return _this;
+  }
+
+  return PluginInfoNotImplementedError;
+}(BasePlugin_BasePluginError);
+
+
+// CONCATENATED MODULE: ./src/plugins/BasePlugin/errors/PluginMainNotImplemented.js
+
+
+
+
+
+
+
+/** Если был вызван не переопределённый метод обработки */
+
+var PluginMainNotImplemented_PluginMainNotImplementedError =
+/*#__PURE__*/
+function (_BasePluginError) {
+  inherits_default()(PluginMainNotImplementedError, _BasePluginError);
+
+  function PluginMainNotImplementedError() {
+    var _getPrototypeOf2;
+
+    var _this;
+
+    classCallCheck_default()(this, PluginMainNotImplementedError);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(PluginMainNotImplementedError)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
+    defineProperty_default()(assertThisInitialized_default()(_this), "name", 'PluginMainNotImplementedError');
+
+    return _this;
+  }
+
+  return PluginMainNotImplementedError;
+}(BasePlugin_BasePluginError);
+
+
+// CONCATENATED MODULE: ./src/plugins/BasePlugin/index.js
+
+
+
+
+/** Базовый класс плагинов */
+
+var BasePlugin_BasePlugin =
+/*#__PURE__*/
+function () {
+  function BasePlugin() {
+    classCallCheck_default()(this, BasePlugin);
+  }
+
+  createClass_default()(BasePlugin, [{
+    key: "pluginInfo",
+
+    /** Информация о плагине */
+    value: function pluginInfo() {
+      throw new PluginInfoNotImplemented_PluginInfoNotImplementedError(); // return {
+      //   version: '0.0.0',
+      //   name: 'BasePlugin',
+      //   desc: 'Plugin base class',
+      //   author: 'Yuri Kulagin (@jkulvich)',
+      //   site: 'https://github.com/jkulvich/pexe'
+      // }
+    }
+    /** Метод обработки */
+
+  }, {
+    key: "main",
+    value: function main(exe) {
+      throw new PluginMainNotImplemented_PluginMainNotImplementedError();
+    }
+  }]);
+
+  return BasePlugin;
+}();
+
+
+// CONCATENATED MODULE: ./src/plugins/RightsViewer/index.js
+
+
+
+
+
+
+
+/**
+ * Позволяет получить информацию по доступам приложения
+ * на основе импортируемых методов
+ */
+var RightsViewer_RightsViewer =
+/*#__PURE__*/
+function (_BasePlugin) {
+  inherits_default()(RightsViewer, _BasePlugin);
+
+  function RightsViewer() {
+    classCallCheck_default()(this, RightsViewer);
+
+    return possibleConstructorReturn_default()(this, getPrototypeOf_default()(RightsViewer).apply(this, arguments));
+  }
+
+  createClass_default()(RightsViewer, [{
+    key: "pluginInfo",
+    value: function pluginInfo() {
+      return {
+        version: '0.9.0',
+        name: 'RightsViewer',
+        desc: 'Позволяет просматривать доступные разрешения на основе импортируемых методов',
+        author: 'Yuri Kulagin (@jkulvich)',
+        site: 'https://github.com/jkulvich/pexe'
+      };
+    }
+  }, {
+    key: "main",
+    value: function main(exe) {
+      return {};
+    }
+  }]);
+
+  return RightsViewer;
+}(BasePlugin_BasePlugin);
+
+
+// CONCATENATED MODULE: ./src/index.js
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return src_Pexe; });
+
+
+
+
+
+
+
+
+
+
+
+
+var src_Pexe =
+/*#__PURE__*/
+function () {
+  function Pexe() {
+    classCallCheck_default()(this, Pexe);
+
+    defineProperty_default()(this, "parser", new parser_PexeParser());
+
+    defineProperty_default()(this, "plugins", []);
+  }
+
+  createClass_default()(Pexe, [{
+    key: "setFile",
+    value: function setFile(bytes) {
+      this.parser.setFile(bytes);
+    }
+  }, {
+    key: "fetchFile",
+    value: function () {
+      var _fetchFile = asyncToGenerator_default()(
+      /*#__PURE__*/
+      regenerator_default.a.mark(function _callee(url) {
+        var resp, buff;
+        return regenerator_default.a.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return window.fetch(url);
+
+              case 2:
+                resp = _context.sent;
+                _context.next = 5;
+                return resp.arrayBuffer();
+
+              case 5:
+                buff = _context.sent;
+                this.setFile(new Uint8Array(buff));
+
+              case 7:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
+
+      function fetchFile(_x) {
+        return _fetchFile.apply(this, arguments);
+      }
+
+      return fetchFile;
+    }()
+  }, {
+    key: "addPlugin",
+    value: function addPlugin(plugins) {
+      if (plugins instanceof Array) {
+        var _this$plugins;
+
+        (_this$plugins = this.plugins).push.apply(_this$plugins, toConsumableArray_default()(plugins));
+      } else {
+        this.plugins.push(plugins);
+      }
+    }
+  }, {
+    key: "applyPlugins",
+    value: function applyPlugins(exe) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.plugins[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var plugin = _step.value;
+          var info = plugin.pluginInfo();
+          exe.meta.plugins[info.name] = plugin.main(exe);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+  }, {
+    key: "parse",
+    value: function parse() {
+      this.addPlugin(new RightsViewer_RightsViewer());
+      var exe = this.parser.parse();
+      this.applyPlugins(exe);
+      return exe;
+    }
+  }]);
+
+  return Pexe;
+}();
 
 
 

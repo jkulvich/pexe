@@ -4,8 +4,8 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 module.exports = {
   mode: 'production',
   entry: {
-    'pexe': './src/main.js',
-    'pexe.min': './src/main.js'
+    'pexe': './src/index.js',
+    'pexe.min': './src/index.js'
   },
   devtool: 'source-map',
   output: {

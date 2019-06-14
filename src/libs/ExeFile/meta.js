@@ -23,4 +23,5 @@ export type Meta = {
   sections: Array<SectionData>,
   imports: Array<ImportData>,
   exports: Array<ExportData>,
+  plugins: { [string]: {} },
 }

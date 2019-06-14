@@ -6,18 +6,61 @@
 </head>
 <body>
 <script src="./pexe.js"></script>
+<canvas id="filemap"></canvas>
 <script>
   (async () => {
 
     let pexe = new Pexe()
+    await pexe.fetchFile('./soft/dll2.dll')
 
     console.time('parsing time')
-    await pexe.fetchFile('./soft/dll1.dll')
+    let exe = pexe.parse()
     console.timeEnd('parsing time')
 
-    console.log(pexe.parse())
+    console.log(exe)
 
-  })();
+    // Графическое представление файла
+
+    let makeVisual = (exe, width, height) => {
+      let canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      let g = canvas.getContext('2d')
+      let data = new ImageData(width, height)
+
+      for (let i = 0; i < exe.bytes.length; i++) {
+        let diffLast = 0
+        if (i > 0) diffLast = Math.abs(exe.bytes[i - 1] - exe.bytes[i])
+
+        let diffNext = 0
+        if (i < exe.bytes.length - 1) diffNext = Math.abs(exe.bytes[i] - exe.bytes[i + 1])
+
+        let rgba = [exe.bytes[i], diffLast, diffNext, 255]
+
+        data.data[i * 4 + 0] = rgba[0]
+        data.data[i * 4 + 1] = rgba[1]
+        data.data[i * 4 + 2] = rgba[2]
+        data.data[i * 4 + 3] = rgba[3]
+      }
+
+      g.putImageData(data, 0, 0)
+      return canvas
+    }
+
+    let canvas = document.querySelector('#filemap')
+    let width = 256
+    let height = exe.bytes.length / width
+    let scale = 5
+
+    canvas.setAttribute('width', width * scale)
+    canvas.setAttribute('height', height * scale)
+    let g = canvas.getContext('2d')
+    g.imageSmoothingEnabled = false
+
+    let image = makeVisual(exe, width, height)
+    g.drawImage(image, 0, 0, width * scale, height * scale)
+
+  })()
 </script>
 </body>
 </html>

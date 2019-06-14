@@ -26,7 +26,7 @@ import { PexeIncorrectOrdinalError, PexeRvaToRawNullError } from './errors'
 import type { SectionData } from './libs/ExeFile/sectionData'
 import type { ExportData, ExportDataFunc } from './libs/ExeFile/exportData'
 
-export default class Pexe {
+export default class PexeParser {
   breader: BlockReader
 
   constructor (bytes?: Uint8Array) {
@@ -39,17 +39,6 @@ export default class Pexe {
    */
   setFile (bytes: Uint8Array) {
     this.breader = new BlockReader(new FileReader(bytes))
-  }
-
-  /**
-   * Извлекает файл из сети и устанавливает его в качестве целевого
-   * @param url
-   * @returns {Promise<void>}
-   */
-  async fetchFile (url: string) {
-    let resp = await window.fetch(url)
-    let buff = await resp.arrayBuffer()
-    this.setFile(new Uint8Array(buff))
   }
 
   /*
@@ -91,6 +80,8 @@ export default class Pexe {
    */
   getMeta (exe: ExeFile): Meta {
     let meta: Meta = {}
+    meta.plugins = {}
+
     meta.isDOS = exe.headers.dos.e_magic.text === 'MZ'
     meta.isNT = exe.headers.nt.Signature.text === 'PE\0\0'
 
