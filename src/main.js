@@ -22,9 +22,9 @@ import BlockReaderExportDescriptor from './libs/ExeFile/exportDescriptor'
 import { Type } from './libs/types'
 import type { DataBlock } from './libs/FileReader'
 import type { ImportData } from './libs/ExeFile/importData'
-import { RvaToRawNullError } from './errors'
+import { PexeIncorrectOrdinalError, PexeRvaToRawNullError } from './errors'
 import type { SectionData } from './libs/ExeFile/sectionData'
-import type { ExportData } from './libs/ExeFile/exportData'
+import type { ExportData, ExportDataFunc } from './libs/ExeFile/exportData'
 
 export default class Pexe {
   breader: BlockReader
@@ -78,7 +78,7 @@ export default class Pexe {
         }
       }
       return null
-      //throw new RvaToRawNullError(`RVA: ${rva}`)
+      //throw new PexeRvaToRawNullError(`RVA: ${rva}`)
       //return 0
     }
   }
@@ -95,7 +95,7 @@ export default class Pexe {
     meta.isNT = exe.headers.nt.Signature.text === 'PE\0\0'
 
     if (meta.isNT) {
-      meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000)
+      meta.date = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000)
 
       meta.machine = DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num)
       meta.magic = DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num)
@@ -118,6 +118,7 @@ export default class Pexe {
       meta.isDLL = meta.chars.includes('DLL')
       meta.is64 = meta.magic === 'PE64'
       meta.isStripped = meta.chars.findIndex(c => c.toLowerCase().indexOf('stripped') >= 0) >= 0
+      meta.isGUI = meta.subsystem === 'WindowsGui'
       // Дополнительно детектить по директории IMAGE_DIRECTORY_ENTRY_DEBUG
       meta.isDebug = meta.sections.findIndex(s => s.name.toLowerCase().indexOf('debug') >= 0) >= 0
       // .cormeta если присутствует секция - ПО содержит managed код тоже
@@ -198,32 +199,69 @@ export default class Pexe {
       let nameRaw = rvaToRaw(exportDesk.Name.num)
       if (nameRaw !== null) {
         this.breader.setPointer(nameRaw)
-        let name = this.breader.readString()
-        data.name = name
+        data.name = this.breader.readString()
 
         let addressFuncNamesRaw = rvaToRaw(exportDesk.AddressOfNames.num)
-        if (addressFuncNamesRaw !== null) {
-          let funcs = []
+        let addressFuncOrdinalsRaw = rvaToRaw(exportDesk.AddressOfNameOrdinals.num)
+        let addressFuncOffsetRaw = rvaToRaw(exportDesk.AddressOfFunctions.num)
+        if (
+          addressFuncNamesRaw !== null &&
+          addressFuncOrdinalsRaw !== null &&
+          addressFuncOffsetRaw !== null
+        ) {
+          let funcNames: Array<string> = []
+          let addresses: Array<number> = []
+          let ordinals: Array<number> = []
 
-          for (let fnameRaw = addressFuncNamesRaw; ; fnameRaw += Type.DWord) {
-            this.breader.setPointer(fnameRaw)
+          // Чтение массива имён
+          for (let i = 0; i < exportDesk.NumberOfNames.num; i++) {
+            this.breader.setPointer(addressFuncNamesRaw + i * Type.DWord)
             let nameFuncRva = this.breader.readType(Type.DWord).num
-            if (nameFuncRva === 0) break // TODO: ПРотестить ещё на либах, лишний метод в конце
 
             let nameFuncRaw = rvaToRaw(nameFuncRva)
             if (nameFuncRaw !== null) {
               this.breader.setPointer(nameFuncRaw)
-
               let nameFunc = this.breader.readString()
-
-              funcs.push(nameFunc)
+              funcNames.push(nameFunc)
             }
           }
 
-          data.funcs = funcs
+          // Чтение массива ординалов
+          for (let i = 0; i < exportDesk.NumberOfNames.num; i++) {
+            this.breader.setPointer(addressFuncOrdinalsRaw + i * Type.Word)
+            let ordinal = this.breader.readType(Type.Word).num
+            ordinals.push(ordinal)
+          }
+
+          // Чтение массива смещений
+          for (let i = 0; i < exportDesk.NumberOfFunctions.num; i++) {
+            this.breader.setPointer(addressFuncOffsetRaw + i * Type.DWord)
+            let funcOffset = this.breader.readType(Type.DWord).num
+            addresses.push(funcOffset) // ТАМ RVA КОНВЕРТНУТЬ!
+          }
+
+          // Формируем массив экспортируемых функций
+          let methods: Array<ExportDataFunc> = []
+          let sortedOrdinals = Object.entries(ordinals).sort((a, b) => Number(a[1]) - Number(b[1]))
+          for (let i = 0; i < funcNames.length; i++) {
+            let ordinal = Number(sortedOrdinals[i][1])
+            let offset = rvaToRaw(addresses[ordinal])
+            if (offset === null) throw new PexeIncorrectOrdinalError(`ordinal with index ${i} with func addr ${addresses[ordinals[i]]} can't be casted to raw`)
+            methods.push({
+              name: funcNames[i],
+              ordinal: ordinal + 1,
+              offset,
+              rva: addresses[ordinal]
+            })
+          }
+
+          data.date = new Date(exportDesk.TimeDateStamp.num * 1000)
+          data.funcs = methods
           imports.push(data)
         }
       }
+      break // TODO: Блокировка на одно вхождение. Чисто технически одна библиотека может экспортировать несколько модулей
+      // Но на некоторых парсер падает, т.к. нет нулей для опознания конца структуры
     }
 
     return imports
@@ -358,3 +396,9 @@ export default class Pexe {
     return exe
   }
 }
+
+/*
+- Если это dll то должно совпадать время создания файла и время сборки методов в таблице экспорта (хотя это не всегда)
+- Если dll экспортирует методы под более чем 1 именем
+- Если dll экспортирует методы под не совпадающим со своим именем
+ */

@@ -4,6 +4,11 @@ export class PexeError extends Error {
 }
 
 /** При неудачной попытке конвертации адреса в памяти к смещению */
-export class RvaToRawNullError extends PexeError {
-  name = 'RvaToRawNullError'
+export class PexeRvaToRawNullError extends PexeError {
+  name = 'PexeRvaToRawNullError'
+}
+
+/** При невозможности получить RWA функции на которую указывает ординал */
+export class PexeIncorrectOrdinalError extends PexeError {
+  name = "PexeIncorrectOrdinalError"
 }

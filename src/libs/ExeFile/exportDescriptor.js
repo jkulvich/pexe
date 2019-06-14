@@ -42,7 +42,13 @@ export default class BlockReaderExportDescriptor extends BlockReader {
     let arr = []
     for (;;) {
       let desc = this.read()
-      if (desc.Name.num === 0) break
+      if (
+        desc.Name.num === 0 ||
+        desc.NumberOfFunctions === 0 ||
+        desc.AddressOfNames === 0 ||
+        desc.AddressOfNameOrdinals === 0 ||
+        desc.AddressOfFunctions === 0
+      ) break
       arr.push(desc)
     }
     return arr

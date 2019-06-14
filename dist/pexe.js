@@ -2511,7 +2511,7 @@ function (_BlockReader) {
 
       for (;;) {
         var desc = this.read();
-        if (desc.Name.num === 0) break;
+        if (desc.Name.num === 0 || desc.NumberOfFunctions === 0 || desc.AddressOfNames === 0 || desc.AddressOfNameOrdinals === 0 || desc.AddressOfFunctions === 0) break;
         arr.push(desc);
       }
 
@@ -2560,30 +2560,57 @@ function (_Error) {
 }(wrapNativeSuper_default()(Error));
 /** При неудачной попытке конвертации адреса в памяти к смещению */
 
-var errors_RvaToRawNullError =
+var errors_PexeRvaToRawNullError =
 /*#__PURE__*/
 function (_PexeError) {
-  inherits_default()(RvaToRawNullError, _PexeError);
+  inherits_default()(PexeRvaToRawNullError, _PexeError);
 
-  function RvaToRawNullError() {
+  function PexeRvaToRawNullError() {
     var _getPrototypeOf3;
 
     var _this2;
 
-    classCallCheck_default()(this, RvaToRawNullError);
+    classCallCheck_default()(this, PexeRvaToRawNullError);
 
     for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
       args[_key2] = arguments[_key2];
     }
 
-    _this2 = possibleConstructorReturn_default()(this, (_getPrototypeOf3 = getPrototypeOf_default()(RvaToRawNullError)).call.apply(_getPrototypeOf3, [this].concat(args)));
+    _this2 = possibleConstructorReturn_default()(this, (_getPrototypeOf3 = getPrototypeOf_default()(PexeRvaToRawNullError)).call.apply(_getPrototypeOf3, [this].concat(args)));
 
-    defineProperty_default()(assertThisInitialized_default()(_this2), "name", 'RvaToRawNullError');
+    defineProperty_default()(assertThisInitialized_default()(_this2), "name", 'PexeRvaToRawNullError');
 
     return _this2;
   }
 
-  return RvaToRawNullError;
+  return PexeRvaToRawNullError;
+}(errors_PexeError);
+/** При невозможности получить RWA функции на которую указывает ординал */
+
+var errors_PexeIncorrectOrdinalError =
+/*#__PURE__*/
+function (_PexeError2) {
+  inherits_default()(PexeIncorrectOrdinalError, _PexeError2);
+
+  function PexeIncorrectOrdinalError() {
+    var _getPrototypeOf4;
+
+    var _this3;
+
+    classCallCheck_default()(this, PexeIncorrectOrdinalError);
+
+    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      args[_key3] = arguments[_key3];
+    }
+
+    _this3 = possibleConstructorReturn_default()(this, (_getPrototypeOf4 = getPrototypeOf_default()(PexeIncorrectOrdinalError)).call.apply(_getPrototypeOf4, [this].concat(args)));
+
+    defineProperty_default()(assertThisInitialized_default()(_this3), "name", "PexeIncorrectOrdinalError");
+
+    return _this3;
+  }
+
+  return PexeIncorrectOrdinalError;
 }(errors_PexeError);
 // CONCATENATED MODULE: ./src/main.js
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return main_Pexe; });
@@ -2703,7 +2730,7 @@ function () {
           }
         }
 
-        return null; //throw new RvaToRawNullError(`RVA: ${rva}`)
+        return null; //throw new PexeRvaToRawNullError(`RVA: ${rva}`)
         //return 0
       };
     }
@@ -2722,7 +2749,7 @@ function () {
       meta.isNT = exe.headers.nt.Signature.text === 'PE\0\0';
 
       if (meta.isNT) {
-        meta.dateStamp = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000);
+        meta.date = new Date(exe.headers.nt.file.TimeDataStamp.num * 1000);
         meta.machine = DataDictionary_DataDictionary.decodeMachine(exe.headers.nt.file.Machine.num);
         meta.magic = DataDictionary_DataDictionary.decodeMagic(exe.headers.nt.optional.Magic.num);
         meta.subsystem = DataDictionary_DataDictionary.decodeSubsystem(exe.headers.nt.optional.Subsystem.num);
@@ -2739,7 +2766,8 @@ function () {
         meta.is64 = meta.magic === 'PE64';
         meta.isStripped = meta.chars.findIndex(function (c) {
           return c.toLowerCase().indexOf('stripped') >= 0;
-        }) >= 0; // Дополнительно детектить по директории IMAGE_DIRECTORY_ENTRY_DEBUG
+        }) >= 0;
+        meta.isGUI = meta.subsystem === 'WindowsGui'; // Дополнительно детектить по директории IMAGE_DIRECTORY_ENTRY_DEBUG
 
         meta.isDebug = meta.sections.findIndex(function (s) {
           return s.name.toLowerCase().indexOf('debug') >= 0;
@@ -2846,30 +2874,69 @@ function () {
 
           if (nameRaw !== null) {
             this.breader.setPointer(nameRaw);
-            var name = this.breader.readString();
-            data.name = name;
+            data.name = this.breader.readString();
             var addressFuncNamesRaw = rvaToRaw(exportDesk.AddressOfNames.num);
+            var addressFuncOrdinalsRaw = rvaToRaw(exportDesk.AddressOfNameOrdinals.num);
+            var addressFuncOffsetRaw = rvaToRaw(exportDesk.AddressOfFunctions.num);
 
-            if (addressFuncNamesRaw !== null) {
-              var funcs = [];
+            if (addressFuncNamesRaw !== null && addressFuncOrdinalsRaw !== null && addressFuncOffsetRaw !== null) {
+              var funcNames = [];
+              var addresses = [];
+              var ordinals = []; // Чтение массива имён
 
-              for (var fnameRaw = addressFuncNamesRaw;; fnameRaw += types_Type.DWord) {
-                this.breader.setPointer(fnameRaw);
+              for (var i = 0; i < exportDesk.NumberOfNames.num; i++) {
+                this.breader.setPointer(addressFuncNamesRaw + i * types_Type.DWord);
                 var nameFuncRva = this.breader.readType(types_Type.DWord).num;
-                if (nameFuncRva === 0) break;
                 var nameFuncRaw = rvaToRaw(nameFuncRva);
 
                 if (nameFuncRaw !== null) {
                   this.breader.setPointer(nameFuncRaw);
                   var nameFunc = this.breader.readString();
-                  funcs.push(nameFunc);
+                  funcNames.push(nameFunc);
                 }
+              } // Чтение массива ординалов
+
+
+              for (var _i = 0; _i < exportDesk.NumberOfNames.num; _i++) {
+                this.breader.setPointer(addressFuncOrdinalsRaw + _i * types_Type.Word);
+                var ordinal = this.breader.readType(types_Type.Word).num;
+                ordinals.push(ordinal);
+              } // Чтение массива смещений
+
+
+              for (var _i2 = 0; _i2 < exportDesk.NumberOfFunctions.num; _i2++) {
+                this.breader.setPointer(addressFuncOffsetRaw + _i2 * types_Type.DWord);
+                var funcOffset = this.breader.readType(types_Type.DWord).num;
+                addresses.push(funcOffset); // ТАМ RVA КОНВЕРТНУТЬ!
+              } // Формируем массив экспортируемых функций
+
+
+              var methods = [];
+              var sortedOrdinals = Object.entries(ordinals).sort(function (a, b) {
+                return Number(a[1]) - Number(b[1]);
+              });
+
+              for (var _i3 = 0; _i3 < funcNames.length; _i3++) {
+                var _ordinal = Number(sortedOrdinals[_i3][1]);
+
+                var offset = rvaToRaw(addresses[_ordinal]);
+                if (offset === null) throw new errors_PexeIncorrectOrdinalError("ordinal with index ".concat(_i3, " with func addr ").concat(addresses[ordinals[_i3]], " can't be casted to raw"));
+                methods.push({
+                  name: funcNames[_i3],
+                  ordinal: _ordinal + 1,
+                  offset: offset,
+                  rva: addresses[_ordinal]
+                });
               }
 
-              data.funcs = funcs;
+              data.date = new Date(exportDesk.TimeDateStamp.num * 1000);
+              data.funcs = methods;
               imports.push(data);
             }
           }
+
+          break; // TODO: Блокировка на одно вхождение. Чисто технически одна библиотека может экспортировать несколько модулей
+          // Но на некоторых парсер падает, т.к. нет нулей для опознания конца структуры
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -3051,6 +3118,12 @@ function () {
 
   return Pexe;
 }();
+/*
+- Если это dll то должно совпадать время создания файла и время сборки методов в таблице экспорта (хотя это не всегда)
+- Если dll экспортирует методы под более чем 1 именем
+- Если dll экспортирует методы под не совпадающим со своим именем
+ */
+
 
 
 
