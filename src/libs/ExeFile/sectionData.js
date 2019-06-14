@@ -6,4 +6,5 @@ export type SectionData = {
   name: string,
   offset: number,
   size: number,
+  chars: Array<string>,
 }

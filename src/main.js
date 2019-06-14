@@ -273,8 +273,6 @@ export default class Pexe {
    * @returns {Array}
    */
   parseSections (exe: ExeFile): Array<SectionData> {
-    let rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num)
-
     let sections = []
     for (let section of exe.sections) {
       this.breader.setPointer(section.Name.offset)
@@ -282,8 +280,9 @@ export default class Pexe {
 
       let offset = section.PointerToRawData.num
       let size = section.SizeOfRawData.num
+      let chars = DataDictionary.decodeSectionChars(section.Characteristics.num)
 
-      sections.push({ name, offset, size })
+      sections.push({ name, offset, size, chars })
     }
     return sections
   }
@@ -401,4 +400,6 @@ export default class Pexe {
 - Если это dll то должно совпадать время создания файла и время сборки методов в таблице экспорта (хотя это не всегда)
 - Если dll экспортирует методы под более чем 1 именем
 - Если dll экспортирует методы под не совпадающим со своим именем
+
+- Если секция содержащая характеристику IMAGE_SCN_CNT_CODE называется не .text или секций с этой характеристикой несколько
  */

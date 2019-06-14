@@ -10,7 +10,11 @@
   (async () => {
 
     let pexe = new Pexe()
+
+    console.time('parsing time')
     await pexe.fetchFile('./soft/dll1.dll')
+    console.timeEnd('parsing time')
+
     console.log(pexe.parse())
 
   })();

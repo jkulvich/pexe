@@ -165,4 +165,56 @@ export default class DataDictionary {
     })
     return names
   }
+
+  /** Декодирует информацию в характеристике секции [Section -> Characteristics] */
+  static decodeSectionChars (id: number): Array<string> {
+    let chars = {
+      [String(0x00000001)]: 'Reserved [00000001]',
+      [String(0x00000002)]: 'Reserved [00000002]',
+      [String(0x00000004)]: 'Reserved [00000004]',
+      [String(0x00000008)]: 'IMAGE_SCN_TYPE_NO_PAD',
+      [String(0x00000010)]: 'Reserved [00000010]',
+      [String(0x00000020)]: 'IMAGE_SCN_CNT_CODE',
+      [String(0x00000040)]: 'IMAGE_SCN_CNT_INITIALIZED_DATA',
+      [String(0x00000080)]: 'IMAGE_SCN_CNT_UNINITIALIZED_DATA',
+      [String(0x00000100)]: 'IMAGE_SCN_LNK_OTHER',
+      [String(0x00000200)]: 'IMAGE_SCN_LNK_INFO',
+      [String(0x00000400)]: 'Reserved [00000400]',
+      [String(0x00000800)]: 'IMAGE_SCN_LNK_REMOVE',
+      [String(0x00001000)]: 'IMAGE_SCN_LNK_COMDAT',
+      [String(0x00002000)]: 'Reserved [00002000]',
+      [String(0x00004000)]: 'IMAGE_SCN_NO_DEFER_SPEC_EXC',
+      [String(0x00008000)]: 'IMAGE_SCN_GPREL',
+      [String(0x00010000)]: 'Reserved [00010000]',
+      [String(0x00020000)]: 'IMAGE_SCN_MEM_PURGEABLE',
+      [String(0x00040000)]: 'IMAGE_SCN_MEM_LOCKED',
+      [String(0x00080000)]: 'IMAGE_SCN_MEM_PRELOAD',
+      [String(0x00100000)]: 'IMAGE_SCN_ALIGN_1BYTES',
+      [String(0x00200000)]: 'IMAGE_SCN_ALIGN_2BYTES',
+      [String(0x00300000)]: 'IMAGE_SCN_ALIGN_4BYTES',
+      [String(0x00400000)]: 'IMAGE_SCN_ALIGN_8BYTES',
+      [String(0x00500000)]: 'IMAGE_SCN_ALIGN_16BYTES',
+      [String(0x00600000)]: 'IMAGE_SCN_ALIGN_32BYTES',
+      [String(0x00700000)]: 'IMAGE_SCN_ALIGN_64BYTES',
+      [String(0x00800000)]: 'IMAGE_SCN_ALIGN_128BYTES',
+      [String(0x00900000)]: 'IMAGE_SCN_ALIGN_256BYTES',
+      [String(0x00A00000)]: 'IMAGE_SCN_ALIGN_512BYTES',
+      [String(0x00B00000)]: 'IMAGE_SCN_ALIGN_1024BYTES',
+      [String(0x00C00000)]: 'IMAGE_SCN_ALIGN_2048BYTES',
+      [String(0x00D00000)]: 'IMAGE_SCN_ALIGN_4096BYTES',
+      [String(0x00E00000)]: 'IMAGE_SCN_ALIGN_8192BYTES',
+      [String(0x01000000)]: 'IMAGE_SCN_LNK_NRELOC_OVFL',
+      [String(0x02000000)]: 'IMAGE_SCN_MEM_DISCARDABLE',
+      [String(0x04000000)]: 'IMAGE_SCN_MEM_NOT_CACHED',
+      [String(0x08000000)]: 'IMAGE_SCN_MEM_NOT_PAGED',
+      [String(0x10000000)]: 'IMAGE_SCN_MEM_SHARED',
+      [String(0x20000000)]: 'IMAGE_SCN_MEM_EXECUTE',
+      [String(0x40000000)]: 'IMAGE_SCN_MEM_READ',
+      [String(0x80000000)]: 'IMAGE_SCN_MEM_WRITE',
+    }
+    let charsList = []
+    for (let code in chars) if ((id & +code) === +code) charsList.push(chars[code])
+    if (id === 0) charsList.push('Reserved [00000000]')
+    return charsList
+  }
 }

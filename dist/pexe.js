@@ -2191,6 +2191,23 @@ function () {
       });
       return names;
     }
+    /** Декодирует информацию в характеристике секции [Section -> Characteristics] */
+
+  }, {
+    key: "decodeSectionChars",
+    value: function decodeSectionChars(id) {
+      var _chars2;
+
+      var chars = (_chars2 = {}, defineProperty_default()(_chars2, String(0x00000001), 'Reserved [00000001]'), defineProperty_default()(_chars2, String(0x00000002), 'Reserved [00000002]'), defineProperty_default()(_chars2, String(0x00000004), 'Reserved [00000004]'), defineProperty_default()(_chars2, String(0x00000008), 'IMAGE_SCN_TYPE_NO_PAD'), defineProperty_default()(_chars2, String(0x00000010), 'Reserved [00000010]'), defineProperty_default()(_chars2, String(0x00000020), 'IMAGE_SCN_CNT_CODE'), defineProperty_default()(_chars2, String(0x00000040), 'IMAGE_SCN_CNT_INITIALIZED_DATA'), defineProperty_default()(_chars2, String(0x00000080), 'IMAGE_SCN_CNT_UNINITIALIZED_DATA'), defineProperty_default()(_chars2, String(0x00000100), 'IMAGE_SCN_LNK_OTHER'), defineProperty_default()(_chars2, String(0x00000200), 'IMAGE_SCN_LNK_INFO'), defineProperty_default()(_chars2, String(0x00000400), 'Reserved [00000400]'), defineProperty_default()(_chars2, String(0x00000800), 'IMAGE_SCN_LNK_REMOVE'), defineProperty_default()(_chars2, String(0x00001000), 'IMAGE_SCN_LNK_COMDAT'), defineProperty_default()(_chars2, String(0x00002000), 'Reserved [00002000]'), defineProperty_default()(_chars2, String(0x00004000), 'IMAGE_SCN_NO_DEFER_SPEC_EXC'), defineProperty_default()(_chars2, String(0x00008000), 'IMAGE_SCN_GPREL'), defineProperty_default()(_chars2, String(0x00010000), 'Reserved [00010000]'), defineProperty_default()(_chars2, String(0x00020000), 'IMAGE_SCN_MEM_PURGEABLE'), defineProperty_default()(_chars2, String(0x00040000), 'IMAGE_SCN_MEM_LOCKED'), defineProperty_default()(_chars2, String(0x00080000), 'IMAGE_SCN_MEM_PRELOAD'), defineProperty_default()(_chars2, String(0x00100000), 'IMAGE_SCN_ALIGN_1BYTES'), defineProperty_default()(_chars2, String(0x00200000), 'IMAGE_SCN_ALIGN_2BYTES'), defineProperty_default()(_chars2, String(0x00300000), 'IMAGE_SCN_ALIGN_4BYTES'), defineProperty_default()(_chars2, String(0x00400000), 'IMAGE_SCN_ALIGN_8BYTES'), defineProperty_default()(_chars2, String(0x00500000), 'IMAGE_SCN_ALIGN_16BYTES'), defineProperty_default()(_chars2, String(0x00600000), 'IMAGE_SCN_ALIGN_32BYTES'), defineProperty_default()(_chars2, String(0x00700000), 'IMAGE_SCN_ALIGN_64BYTES'), defineProperty_default()(_chars2, String(0x00800000), 'IMAGE_SCN_ALIGN_128BYTES'), defineProperty_default()(_chars2, String(0x00900000), 'IMAGE_SCN_ALIGN_256BYTES'), defineProperty_default()(_chars2, String(0x00A00000), 'IMAGE_SCN_ALIGN_512BYTES'), defineProperty_default()(_chars2, String(0x00B00000), 'IMAGE_SCN_ALIGN_1024BYTES'), defineProperty_default()(_chars2, String(0x00C00000), 'IMAGE_SCN_ALIGN_2048BYTES'), defineProperty_default()(_chars2, String(0x00D00000), 'IMAGE_SCN_ALIGN_4096BYTES'), defineProperty_default()(_chars2, String(0x00E00000), 'IMAGE_SCN_ALIGN_8192BYTES'), defineProperty_default()(_chars2, String(0x01000000), 'IMAGE_SCN_LNK_NRELOC_OVFL'), defineProperty_default()(_chars2, String(0x02000000), 'IMAGE_SCN_MEM_DISCARDABLE'), defineProperty_default()(_chars2, String(0x04000000), 'IMAGE_SCN_MEM_NOT_CACHED'), defineProperty_default()(_chars2, String(0x08000000), 'IMAGE_SCN_MEM_NOT_PAGED'), defineProperty_default()(_chars2, String(0x10000000), 'IMAGE_SCN_MEM_SHARED'), defineProperty_default()(_chars2, String(0x20000000), 'IMAGE_SCN_MEM_EXECUTE'), defineProperty_default()(_chars2, String(0x40000000), 'IMAGE_SCN_MEM_READ'), defineProperty_default()(_chars2, String(0x80000000), 'IMAGE_SCN_MEM_WRITE'), _chars2);
+      var charsList = [];
+
+      for (var code in chars) {
+        if ((id & +code) === +code) charsList.push(chars[code]);
+      }
+
+      if (id === 0) charsList.push('Reserved [00000000]');
+      return charsList;
+    }
   }]);
 
   return DataDictionary;
@@ -2964,7 +2981,6 @@ function () {
   }, {
     key: "parseSections",
     value: function parseSections(exe) {
-      var rvaToRaw = this.generateRvaToRawFunc(exe.sections, exe.headers.nt.optional.SectionAlignment.num);
       var sections = [];
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
@@ -2977,10 +2993,12 @@ function () {
           var name = this.breader.readString();
           var offset = section.PointerToRawData.num;
           var size = section.SizeOfRawData.num;
+          var chars = DataDictionary_DataDictionary.decodeSectionChars(section.Characteristics.num);
           sections.push({
             name: name,
             offset: offset,
-            size: size
+            size: size,
+            chars: chars
           });
         }
       } catch (err) {
